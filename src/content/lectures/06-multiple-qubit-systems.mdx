@@ -1,0 +1,233 @@
+---
+number: 6
+title: Multiple-qubit systems and two-qubit gates
+lecturer: Dr Ittoop Puthoor
+blurb: Gates that act on more than one qubit. CNOT, its matrix and linearity, building a Bell pair from scratch, SWAP from three CNOTs, the Toffoli gate, and applying gates to one qubit of many.
+minutes: 60
+prereqs: [4, 5]
+objectives:
+  - Apply CNOT to basis states and, by linearity, to superpositions
+  - Write the 4×4 matrices for CNOT and SWAP
+  - Build $\ket{\Phi^+}$ with H and CNOT and track the state at each step
+  - Explain the Toffoli gate and why it matters
+  - Apply a single-qubit gate to one qubit of a register using $U\otimes I$
+sheet:
+  - title: CNOT
+    points:
+      - "$\\mathrm{CNOT}\\ket{a,b} = \\ket{a, a\\oplus b}$ ($\\oplus$ = XOR)"
+      - "$\\ket{00}\\to\\ket{00}$, $\\ket{01}\\to\\ket{01}$, $\\ket{10}\\to\\ket{11}$, $\\ket{11}\\to\\ket{10}$"
+      - "Matrix: $\\begin{pmatrix}1&0&0&0\\\\0&1&0&0\\\\0&0&0&1\\\\0&0&1&0\\end{pmatrix}$; linear, so it acts term by term"
+  - title: Making a Bell pair
+    points:
+      - "$\\ket{00}\\xrightarrow{H\\otimes I}\\tfrac1{\\sqrt2}(\\ket{00}+\\ket{10})\\xrightarrow{\\mathrm{CNOT}}\\tfrac1{\\sqrt2}(\\ket{00}+\\ket{11})$"
+      - "Inputs $\\ket{ab}$ give the four Bell states: $\\Phi^+ (00), \\Psi^+ (01), \\Phi^- (10), \\Psi^- (11)$"
+  - title: Other gates
+    points:
+      - "SWAP: $\\ket{ab}\\to\\ket{ba}$ = 3 CNOTs (alternating direction)"
+      - "Toffoli: flip target iff both controls are 1; reversible and classically universal"
+      - "$(A\\otimes B)(\\ket a\\otimes\\ket b) = A\\ket a\\otimes B\\ket b$"
+---
+import Callout from '../../components/Callout.astro';
+import Check from '../../components/Check.astro';
+import LockIn from '../../components/LockIn.astro';
+import Deeper from '../../components/Deeper.astro';
+import Exercise from '../../components/Exercise.astro';
+import Steps from '../../components/Steps.astro';
+import Answer from '../../components/Answer.astro';
+import TwoQubitLab from '../../components/TwoQubitLab.astro';
+
+## Recap in one breath
+
+Single qubits: $\ket\psi = \alpha\ket0+\beta\ket1$. Two qubits: tensor product, four amplitudes in the order $\ket{00},\ket{01},\ket{10},\ket{11}$; the vector for $\ket{01}$ is $(0,1,0,0)^T$. Some states (like $\tfrac1{\sqrt2}(\ket{01}+\ket{10})$) are **entangled**. Single-qubit gates (X, H, …) are 2×2 unitaries. Now we need gates that act on **two** qubits at once; without them we could never create entanglement.
+
+## From logic gates to quantum gates
+
+Classical NOT maps 0↔1 and is **reversible** (you can tell the input from the output). Classical NAND maps two bits to one, so it **loses information**: output 1 could come from 00, 01 or 10. Quantum gates are unitary, so they are always reversible: same number of qubits in and out, and nothing forgotten.
+
+## CNOT: controlled-NOT
+
+<Callout type="notation" title="XOR">
+$a\oplus b$ ("a XOR b") is addition mod 2: $0\oplus0 = 0$, $0\oplus1 = 1$, $1\oplus0 = 1$, $1\oplus1 = 0$. It is 1 when the bits differ.
+</Callout>
+
+CNOT has a **control** qubit and a **target** qubit. It flips the target if and only if the control is 1:
+
+$$
+\mathrm{CNOT}\ket{q_0, q_1} = \ket{q_0,\ q_0\oplus q_1}.
+$$
+
+| Input | Output |
+|---|---|
+| $\ket{00}$ | $\ket{00}$ |
+| $\ket{01}$ | $\ket{01}$ |
+| $\ket{10}$ | $\ket{11}$ |
+| $\ket{11}$ | $\ket{10}$ |
+
+In a circuit it is drawn as a dot (●) on the control wire joined to a ⊕ on the target. As a matrix (columns = images of $\ket{00},\ket{01},\ket{10},\ket{11}$):
+
+$$
+\mathrm{CNOT} = \begin{pmatrix}1&0&0&0\\0&1&0&0\\0&0&0&1\\0&0&1&0\end{pmatrix} = \begin{pmatrix} I & 0 \\ 0 & X\end{pmatrix}.
+$$
+
+The block form says it all: if the first qubit is 0 do $I$, if it is 1 do $X$. Equivalently $\mathrm{CNOT} = \ket0\bra0\otimes I + \ket1\bra1\otimes X$.
+
+### Linearity: CNOT on superpositions
+
+CNOT is linear, so apply it to each term:
+
+$$
+\mathrm{CNOT}\Big(\tfrac1{\sqrt2}(\ket{00}+\ket{01})\Big) = \tfrac1{\sqrt2}(\ket{00}+\ket{01}) \quad\text{(control is 0 in both terms: nothing happens)}
+$$
+
+$$
+\mathrm{CNOT}\Big(\tfrac1{\sqrt2}(\ket{0}+\ket{1})\otimes\ket0\Big) = \tfrac1{\sqrt2}\big(\mathrm{CNOT}\ket{00} + \mathrm{CNOT}\ket{10}\big) = \tfrac1{\sqrt2}(\ket{00}+\ket{11}).
+$$
+
+A product state went in; an **entangled** state came out. That is CNOT's superpower.
+
+<Callout type="mistake" title="Which qubit is the control?">
+"CNOT" with no other information means the **first** qubit (left label) controls the **second**. If the circuit has the control on the lower wire, the action becomes $\ket{a,b}\to\ket{a\oplus b, b}$ and the matrix changes. In the lab below, compare "CNOT q0→q1" with "CNOT q1→q0" on $\ket{01}$. Qiskit adds another twist, covered in the code lab: it prints bitstrings with qubit 0 on the **right**.
+</Callout>
+
+<LockIn ids={['l6-cnot', 'l6-cnotm']} />
+
+## Building an EPR (Bell) pair
+
+Start with $\ket{00}$, apply H to the first qubit, then CNOT. Track the state at each stage:
+
+$$
+\psi_1 = \ket0_A\ket0_B = \ket{00}
+$$
+
+$$
+\psi_2 = (H\otimes I)\ket{00} = \tfrac1{\sqrt2}(\ket0+\ket1)\ket0 = \tfrac1{\sqrt2}(\ket{00} + \ket{10})
+$$
+
+$$
+\psi_3 = \mathrm{CNOT}\,\psi_2 = \tfrac1{\sqrt2}(\ket{00} + \ket{11}) = \ket{\Phi^+}.
+$$
+
+<TwoQubitLab notice="Reproduce the Bell-pair circuit: H on q0, then CNOT q0→q1. Then Reset, press X on q1 first, and repeat: you get a different Bell state. Try all four starting points |00⟩, |01⟩, |10⟩, |11⟩." />
+
+Different inputs give the four **Bell states**, an orthonormal basis of two-qubit space made entirely of maximally entangled states:
+
+| Input | Output |
+|---|---|
+| $\ket{00}$ | $\ket{\Phi^+} = \tfrac1{\sqrt2}(\ket{00}+\ket{11})$ |
+| $\ket{01}$ | $\ket{\Psi^+} = \tfrac1{\sqrt2}(\ket{01}+\ket{10})$ |
+| $\ket{10}$ | $\ket{\Phi^-} = \tfrac1{\sqrt2}(\ket{00}-\ket{11})$ |
+| $\ket{11}$ | $\ket{\Psi^-} = \tfrac1{\sqrt2}(\ket{01}-\ket{10})$ |
+
+Entanglement has been demonstrated over more than 1000 km (the Micius satellite, 2017), and its foundations won the **2022 Nobel Prize in Physics** (Aspect, Clauser, Zeilinger).
+
+<LockIn ids={['l6-bell', 'l6-four']} />
+
+## SWAP
+
+SWAP exchanges two qubits: $\ket{ab}\to\ket{ba}$. So $\ket{01}\leftrightarrow\ket{10}$ and $\ket{00}, \ket{11}$ are unchanged:
+
+$$
+\mathrm{SWAP} = \begin{pmatrix}1&0&0&0\\0&0&1&0\\0&1&0&0\\0&0&0&1\end{pmatrix}.
+$$
+
+It can be built from **three CNOTs**, alternating direction: CNOT(0→1), CNOT(1→0), CNOT(0→1). Trace $\ket{10}$: → $\ket{11}$ → $\ket{01}$ → $\ket{01}$ ✓.
+
+## Toffoli (CCNOT)
+
+Three qubits: two **controls** and a **target**. The target flips only when **both** controls are 1: $\ket{P,Q,R}\to\ket{P,Q,R\oplus(P\cdot Q)}$. Its 8×8 matrix is the identity except that the last two rows are swapped ($\ket{110}\leftrightarrow\ket{111}$).
+
+Toffoli is **reversible** and **universal for classical reversible logic**: with $R = 1$ it computes NAND, and any classical circuit can be made from NANDs. So a quantum computer can run any classical computation. Toffolis appear in Shor's arithmetic, Grover's oracles and error-correction syndrome checks.
+
+<LockIn ids={['l6-swap', 'l6-toffoli', 'l6-kron']} />
+
+## Gates on one qubit of many
+
+To apply $U$ to the first qubit and nothing to the second, use the tensor product of operators:
+
+$$
+(A\otimes B)(\ket a\otimes\ket b) = A\ket a\otimes B\ket b.
+$$
+
+So "H on qubit 0" is $H\otimes I$, a 4×4 matrix:
+
+$$
+H\otimes I = \tfrac1{\sqrt2}\begin{pmatrix}1\cdot I & 1\cdot I\\ 1\cdot I & -1\cdot I\end{pmatrix} = \tfrac1{\sqrt2}\begin{pmatrix}1&0&1&0\\0&1&0&1\\1&0&-1&0\\0&1&0&-1\end{pmatrix}.
+$$
+
+<Callout type="mistake">
+$H\otimes I \ne I\otimes H$. The position in the tensor product is which qubit the gate acts on. And CNOT is **not** a tensor product of two single-qubit gates, which is exactly why it can create entanglement.
+</Callout>
+
+## Worked exercises
+
+<Exercise title="6.1 · ⊗ of two superpositions" from="Lecture 6: try this out">
+Compute $\tfrac{1}{\sqrt2}(\ket0+\ket1)\otimes\tfrac1{\sqrt2}(\ket0+\ket1)$.
+<Steps>
+1. Vectors: $\tfrac1{\sqrt2}\begin{pmatrix}1\\1\end{pmatrix}\otimes\tfrac1{\sqrt2}\begin{pmatrix}1\\1\end{pmatrix}$.
+2. Multiply the prefactors: $\tfrac1{\sqrt2}\cdot\tfrac1{\sqrt2} = \tfrac12$.
+3. Each top entry times the whole second vector: $\begin{pmatrix}1\cdot(1,1)\\1\cdot(1,1)\end{pmatrix} = (1,1,1,1)^T$.
+</Steps>
+<Answer>$\tfrac12(1,1,1,1)^T = \tfrac12(\ket{00}+\ket{01}+\ket{10}+\ket{11})$: a superposition of all 2-bit strings, built from two independent qubits.</Answer>
+</Exercise>
+
+<Exercise title="6.2 · CNOT on the uniform superposition" from="Lecture 6: try it out">
+Compute $\mathrm{CNOT}\big(\tfrac12(\ket{00}+\ket{01}+\ket{10}+\ket{11})\big)$.
+<Steps>
+1. By linearity, apply CNOT to each term: $\ket{00}\to\ket{00}$, $\ket{01}\to\ket{01}$, $\ket{10}\to\ket{11}$, $\ket{11}\to\ket{10}$.
+2. Sum: $\tfrac12(\ket{00}+\ket{01}+\ket{11}+\ket{10})$.
+3. That is the same set of terms as before.
+</Steps>
+<Answer>Unchanged: $\tfrac12(\ket{00}+\ket{01}+\ket{10}+\ket{11})$. CNOT only permutes the terms, and here they all have equal amplitude. (In other words $\ket{++}$ is an eigenstate of CNOT.)</Answer>
+</Exercise>
+
+<Exercise title="6.3 · SWAP by matrix" from="Lecture 6: try this out">
+Use the SWAP matrix to compute $\mathrm{SWAP}\ket{01}$.
+<Steps>
+1. $\ket{01} = (0,1,0,0)^T$.
+2. Multiply: row 1 $(1,0,0,0)\cdot = 0$; row 2 $(0,0,1,0)\cdot = 0$; row 3 $(0,1,0,0)\cdot = 1$; row 4 $= 0$.
+3. Result $(0,0,1,0)^T = \ket{10}$.
+</Steps>
+<Answer>$\mathrm{SWAP}\ket{01} = \ket{10}$.</Answer>
+</Exercise>
+
+<Exercise title="6.4 · Bell state from |11⟩" from="Problem set style">
+Apply H to the first qubit of $\ket{11}$, then CNOT. Which Bell state results?
+<Steps>
+1. $(H\otimes I)\ket{11} = \ket-\ket1 = \tfrac1{\sqrt2}(\ket0 - \ket1)\ket1 = \tfrac1{\sqrt2}(\ket{01} - \ket{11})$.
+2. CNOT each term: $\ket{01}\to\ket{01}$, $\ket{11}\to\ket{10}$.
+3. Result: $\tfrac1{\sqrt2}(\ket{01} - \ket{10})$.
+</Steps>
+<Answer>$\ket{\Psi^-}$, the singlet: the state used in Lecture 8's Bell test.</Answer>
+</Exercise>
+
+<Exercise title="6.5 · A circuit, step by step" from="Problem set style">
+Start in $\ket{00}$. Apply X to qubit 1 (the second), then H to qubit 0, then CNOT (0 → 1), then H to qubit 0. Find the final state and the probabilities of each outcome.
+<Steps>
+1. $X$ on qubit 1: $\ket{01}$.
+2. $H$ on qubit 0: $\tfrac1{\sqrt2}(\ket{01} + \ket{11})$.
+3. CNOT: $\ket{01}\to\ket{01}$, $\ket{11}\to\ket{10}$, giving $\tfrac1{\sqrt2}(\ket{01}+\ket{10})$.
+4. $H$ on qubit 0: $\ket{01}\to\tfrac1{\sqrt2}(\ket{01}+\ket{11})$ and $\ket{10}\to\tfrac1{\sqrt2}(\ket{00}-\ket{10})$.
+5. Total: $\tfrac12(\ket{00} + \ket{01} - \ket{10} + \ket{11})$.
+</Steps>
+<Answer>$\tfrac12(\ket{00}+\ket{01}-\ket{10}+\ket{11})$; each outcome has probability $\tfrac14$. Is it entangled? $\alpha_{00}\alpha_{11} = \tfrac14$ but $\alpha_{01}\alpha_{10} = -\tfrac14$, so yes.</Answer>
+</Exercise>
+
+<Check
+  q="Which matrix acts as H on the **second** qubit only?"
+  options={["$H\\otimes I$", "$I\\otimes H$", "$H\\otimes H$", "$\\mathrm{CNOT}\\cdot H$"]}
+  answer={1}
+  tag="order"
+  explain="The slot in the tensor product is the qubit. Second qubit → second slot: $I\otimes H$."
+/>
+
+<Deeper title="Controlled-U and phase kickback" level="MSc">
+Any gate can be controlled: $C\text{-}U = \ket0\bra0\otimes I + \ket1\bra1\otimes U$. If the target is an eigenstate $U\ket u = e^{i\phi}\ket u$, then $C\text{-}U(\ket+\ket u) = \tfrac1{\sqrt2}(\ket0 + e^{i\phi}\ket1)\ket u$: the phase has "kicked back" onto the control. This trick drives the Deutsch–Jozsa, Bernstein–Vazirani and phase-estimation algorithms (and hence Shor's). Simplest example: CNOT on $\ket+\ket-$ gives $\ket-\ket-$, so the control flipped even though the "target" was the one being NOT-ed.
+</Deeper>
+
+<Deeper title="CNOT is symmetric in the ± basis" level="MSc">
+$(H\otimes H)\,\mathrm{CNOT}_{0\to1}\,(H\otimes H) = \mathrm{CNOT}_{1\to0}$: in the +/− basis, control and target swap roles. And CZ is symmetric: $\mathrm{CZ} = (I\otimes H)\mathrm{CNOT}(I\otimes H)$ treats both qubits equally. This is why "which one is the control" is a basis-dependent statement.
+</Deeper>
+
+<Deeper title="Entangling power and the Cartan (KAK) decomposition" level="PhD">
+Every two-qubit unitary can be written $(A_1\otimes B_1)\,e^{i(c_1 XX + c_2 YY + c_3 ZZ)}\,(A_2\otimes B_2)$. The three numbers $(c_1, c_2, c_3)$ capture all its non-local power, and any two-qubit gate needs at most 3 CNOTs (Vidal & Dawson 2004; Kraus & Cirac 2001). SWAP needs all 3; CNOT is "half" of it in this geometry.
+</Deeper>

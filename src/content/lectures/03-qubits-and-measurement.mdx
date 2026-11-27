@@ -1,0 +1,250 @@
+---
+number: 3
+title: Qubits and measurement
+lecturer: Dr Ittoop Puthoor & Dr Jonte Hance
+blurb: From random bits to qubits. What α and β mean, how to work out any measurement probability, why phase makes a qubit more than a coin, and the Bloch sphere.
+minutes: 60
+prereqs: [2]
+objectives:
+  - Write a general qubit $\ket\psi = \A\alpha\ket0 + \B\beta\ket1$ and check it is normalised
+  - Use the Born rule $P(\phi|\psi) = |\braket{\phi}{\psi}|^2$ for any measurement
+  - Derive and use $P(+|\psi) = |\A\alpha+\B\beta|^2/2$
+  - Explain why global phase is irrelevant but relative phase is not
+  - Place a state on the Bloch sphere using $\theta$ and $\varphi$
+sheet:
+  - title: The qubit
+    points:
+      - "$\\ket0 = \\begin{pmatrix}1\\\\0\\end{pmatrix}$, $\\ket1 = \\begin{pmatrix}0\\\\1\\end{pmatrix}$"
+      - "$\\ket\\psi = \\A\\alpha\\ket0 + \\B\\beta\\ket1$, $\\alpha,\\beta\\in\\mathbb C$, $|\\A\\alpha|^2+|\\B\\beta|^2 = 1$"
+      - "$\\ket\\pm = \\tfrac1{\\sqrt2}(\\ket0\\pm\\ket1)$"
+  - title: Measurement rules
+    points:
+      - "Born rule: $P(\\phi|\\psi) = |\\braket{\\phi}{\\psi}|^2$"
+      - "$P(0) = |\\A\\alpha|^2$, $P(1) = |\\B\\beta|^2$"
+      - "$P(\\pm) = \\dfrac{|\\A\\alpha\\pm\\B\\beta|^2}{2}$"
+      - "Same state → probability 1; orthogonal state → 0"
+      - "After measuring, the state *becomes* the result"
+  - title: Phase
+    points:
+      - "Global phase $e^{i\\gamma}\\ket\\psi$: undetectable"
+      - "Relative phase: real, e.g. $\\ket+$ vs $\\ket-$ (same 0/1 stats, opposite in +/−)"
+  - title: Bloch sphere
+    points:
+      - "$\\ket\\psi = \\cos\\tfrac\\theta2\\ket0 + e^{i\\varphi}\\sin\\tfrac\\theta2\\ket1$"
+      - "North pole $\\ket0$, south $\\ket1$, equator: $\\ket\\pm$ ($\\varphi = 0,\\pi$), $\\ket{\\pm i}$ ($\\varphi = \\pm\\pi/2$)"
+      - "A measurement = an axis; opposite points = orthogonal states"
+---
+import Callout from '../../components/Callout.astro';
+import Check from '../../components/Check.astro';
+import LockIn from '../../components/LockIn.astro';
+import Deeper from '../../components/Deeper.astro';
+import Exercise from '../../components/Exercise.astro';
+import Steps from '../../components/Steps.astro';
+import Answer from '../../components/Answer.astro';
+import Bloch from '../../components/Bloch.astro';
+import MeasureLab from '../../components/MeasureLab.astro';
+
+## From coin flips to qubits
+
+Most algorithms are **deterministic**: same input, same output. **Probabilistic** (stochastic) algorithms can return different outputs, each with a probability, and the probabilities add to 1. Classical computers fake randomness with pseudo-random number generators. Quantum measurement is **genuinely** random.
+
+A **probabilistic bit** is like a light switch in a dark room: it *is* on or off, we just don't know which. Say "0 with probability $P$, 1 with probability $1-P$". When we look, we update: seeing 0 sets $P$ to 100%. That probability only describes **our ignorance**.
+
+## The qubit
+
+Replace "0 or 1" with **two basis vectors**:
+
+$$
+\ket0 = \begin{pmatrix}1\\0\end{pmatrix}, \qquad \ket1 = \begin{pmatrix}0\\1\end{pmatrix}.
+$$
+
+A qubit can be any unit-length combination of them:
+
+$$
+\ket\psi = \A{\alpha}\ket0 + \B{\beta}\ket1 = \begin{pmatrix}\A\alpha\\ \B\beta\end{pmatrix}, \qquad |\A\alpha|^2 + |\B\beta|^2 = 1.
+$$
+
+<Callout type="notation" title="Colours on this site">
+$\A\alpha$ ("alpha", the amount of $\ket0$) is always **purple** and $\B\beta$ ("beta", the amount of $\ket1$) is always **teal**, in equations and in every picture. They are **amplitudes**: complex numbers, not probabilities.
+</Callout>
+
+**What α and β mean.** Measure "0 or 1" and you get 0 with probability $|\A\alpha|^2$ and 1 with probability $|\B\beta|^2$. Afterwards the qubit **is** whatever you saw: $\ket0$ or $\ket1$. That is why the condition $|\A\alpha|^2 + |\B\beta|^2 = 1$ is needed: probabilities must add to 1.
+
+<Check
+  mode="predict"
+  q="So far a qubit sounds exactly like a probabilistic bit with $P = |\alpha|^2$. Is it?"
+  options={["Yes, it is just a fancier description", "No, because the amplitudes can be negative or complex, and that shows up in other kinds of measurement"]}
+  answer={1}
+  explain="The difference is that a qubit can be measured in **other ways** too. The next section shows two states with identical 0/1 statistics that are completely distinguishable by a different measurement."
+/>
+
+## Measuring in other ways: + or −
+
+As well as "0 or 1", we can measure "**+ or −**", where
+
+$$
+\ket+ = \tfrac{1}{\sqrt2}(\ket0 + \ket1), \qquad \ket- = \tfrac{1}{\sqrt2}(\ket0 - \ket1).
+$$
+
+The $\tfrac1{\sqrt2}$ keeps them unit length: $(\tfrac1{\sqrt2})^2 + (\tfrac1{\sqrt2})^2 = 1$. Both $\ket+$ and $\ket-$ give 0 or 1 with 50% each. Yet, as we'll compute, measuring $\ket+$ in the +/− basis gives "+" **every time**. A classical bit can only be looked at one way; a qubit can be measured in infinitely many bases, which are superpositions of each other.
+
+### The rule for any measurement
+
+<Callout type="idea" title="The Born rule">
+The probability that a system prepared in $\ket\psi$ is found in $\ket\phi$ is
+
+$$
+P(\phi|\psi) = |\braket{\phi}{\psi}|^2.
+$$
+
+Read it right to left: start in $\psi$, ask "is it $\phi$?". The inner product $\braket{\phi}{\psi}$ is the **amplitude**; square its size to get the **probability**.
+</Callout>
+
+Two sanity checks the lecture lists: asking whether a state is in **itself** gives $|\braket{\psi}{\psi}|^2 = 1$; asking whether it is in an **orthogonal** state (e.g. $\ket-$ when you prepared $\ket+$) gives 0.
+
+### Deriving P(+|ψ)
+
+<Callout type="notation">
+Remember a bra is the conjugate transpose: $\bra+ = \tfrac1{\sqrt2}(\bra0 + \bra1)$, and the basis is **orthonormal**: $\braket00 = \braket11 = 1$, $\braket01 = \braket10 = 0$.
+</Callout>
+
+Step by step:
+
+$$
+\braket{+}{\psi} = \tfrac1{\sqrt2}(\bra0 + \bra1)(\A\alpha\ket0 + \B\beta\ket1)
+= \tfrac1{\sqrt2}\big(\A\alpha\braket00 + \B\beta\braket01 + \A\alpha\braket10 + \B\beta\braket11\big)
+= \tfrac{\A\alpha + \B\beta}{\sqrt2}.
+$$
+
+Square the size:
+
+$$
+P(+|\psi) = \frac{|\A\alpha + \B\beta|^2}{2}, \qquad P(-|\psi) = \frac{|\A\alpha - \B\beta|^2}{2}.
+$$
+
+<MeasureLab />
+
+<Callout type="mistake">
+Three slips account for most lost marks here. (1) Stopping at the amplitude $\tfrac{\alpha+\beta}{\sqrt2}$ and forgetting to **square**. (2) Squaring the parts separately: $|\alpha+\beta|^2 \ne |\alpha|^2 + |\beta|^2$ in general; that difference *is* interference. (3) Sign slips when β is negative: with $\beta = -0.8$, $\alpha - \beta = 0.6 - (-0.8) = 1.4$.
+</Callout>
+
+<LockIn ids={['l3-qubit', 'l3-born', 'l3-plus', 'l3-pplus', 'l3-orth']} />
+
+## Phase: what makes a qubit a qubit
+
+Write each amplitude in polar form (Lecture 2): $\A\alpha = |\alpha|e^{i a}$, $\B\beta = |\beta|e^{i b}$. The angles are **phases**.
+
+**Global phase does nothing.** Multiply the whole state by $e^{i\gamma}$: every probability gets multiplied by $|e^{i\gamma}|^2 = 1$. So $\ket\psi$ and $e^{i\gamma}\ket\psi$ are physically the **same state**. Example: $-\ket0$ is the same as $\ket0$.
+
+**Relative phase matters.** $\ket+$ and $\ket-$ differ only by the sign (a phase of $\pi$) in front of $\ket1$, but $P(+|+) = 1$ while $P(+|-) = 0$. So we can always move all the phase onto $\ket1$ and write
+
+$$
+\ket\psi = \cos\tfrac{\theta}{2}\ket0 + e^{i\varphi}\sin\tfrac{\theta}{2}\ket1.
+$$
+
+Two real numbers, $\theta$ and $\varphi$, describe any qubit (up to the irrelevant global phase).
+
+## The Bloch sphere
+
+Treat $\theta$ as latitude (measured down from the north pole) and $\varphi$ as longitude: every qubit is a point on a sphere.
+
+- North pole: $\ket0$ ($\theta = 0$). South pole: $\ket1$ ($\theta = \pi$).
+- Equator: equal superpositions. $\ket+$ at $\varphi = 0$, $\ket-$ at $\varphi = \pi$, $\ket{i} = \tfrac1{\sqrt2}(\ket0 + i\ket1)$ at $\varphi = \pi/2$, $\ket{-i}$ at $\varphi = 3\pi/2$.
+- A measurement is an **axis** through the sphere. Orthogonal states sit at **opposite** points.
+
+<Bloch />
+
+Want to see it properly in 3D, rotate it and watch measurements as shadows? Open the [3D Bloch sphere](/visuals#bloch) and [interference as arrows](/visuals#clocks).
+
+<Callout type="careful" title="Why θ/2, not θ?">
+$\ket0$ and $\ket1$ are orthogonal but sit 180° apart on the sphere. Halving the angle makes 180° on the sphere into 90° between the vectors. So "opposite on the sphere" always means "orthogonal as vectors".
+</Callout>
+
+<LockIn ids={['l3-global', 'l3-bloch', 'l3-diff', 'l3-after']} />
+
+## Worked exercises
+
+<Exercise title="3.1 · The in-class exercise: P(+|ψ) for four states" from="Lecture 3, in-class exercise">
+Using $P(+|\psi) = \dfrac{|\alpha+\beta|^2}{2}$, find $P(+|\psi)$ when $\ket\psi$ is (a) $\ket+$, (b) $\ket-$, (c) $\ket1$, (d) $\ket0$.
+<Steps>
+1. Read off α and β for each state by matching with $\alpha\ket0 + \beta\ket1$.
+2. (a) $\ket+$: $\alpha = \beta = \tfrac1{\sqrt2}$, so $P = \dfrac{|\tfrac1{\sqrt2}+\tfrac1{\sqrt2}|^2}{2} = \dfrac{(\sqrt2)^2}{2} = 1$.
+3. (b) $\ket-$: $\alpha = \tfrac1{\sqrt2}$, $\beta = -\tfrac1{\sqrt2}$, so $P = \dfrac{|0|^2}{2} = 0$.
+4. (c) $\ket1$: $\alpha = 0$, $\beta = 1$, so $P = \dfrac{|1|^2}{2} = \tfrac12$.
+5. (d) $\ket0$: $\alpha = 1$, $\beta = 0$, so $P = \tfrac12$.
+</Steps>
+<Answer>(a) 1, (b) 0, (c) ½, (d) ½. The lesson: $\ket0$ and $\ket1$ both give 50% for +/−, just as $\ket\pm$ both give 50% for 0/1. Different states, same 50% in one basis; phase tells them apart in another.</Answer>
+</Exercise>
+
+<Exercise title="3.2 · A quiz-style question" from="Problem set style">
+$\ket\psi = 0.6\ket0 - 0.8\ket1$. Check it is normalised and find $P(0)$, $P(1)$, $P(+)$ and $P(-)$.
+<Steps>
+1. Normalised? $|0.6|^2 + |-0.8|^2 = 0.36 + 0.64 = 1$ ✓.
+2. $P(0) = |\alpha|^2 = 0.36$, $P(1) = |\beta|^2 = 0.64$.
+3. $P(+) = \dfrac{|0.6 + (-0.8)|^2}{2} = \dfrac{(-0.2)^2}{2} = \dfrac{0.04}{2} = 0.02$.
+4. $P(-) = \dfrac{|0.6 - (-0.8)|^2}{2} = \dfrac{1.4^2}{2} = \dfrac{1.96}{2} = 0.98$.
+5. Check: $0.02 + 0.98 = 1$ ✓.
+</Steps>
+<Answer>$P(0) = 0.36$, $P(1) = 0.64$, $P(+) = 0.02$, $P(-) = 0.98$. The state is almost $\ket-$.</Answer>
+</Exercise>
+
+<Exercise title="3.3 · Complex amplitudes" from="Extension">
+$\ket\psi = \tfrac{1}{\sqrt2}\ket0 + \tfrac{i}{\sqrt2}\ket1$. Find $P(+)$ and $P(i)$ where $\ket{i} = \tfrac1{\sqrt2}(\ket0 + i\ket1)$.
+<Steps>
+1. $P(+) = \dfrac{|\tfrac1{\sqrt2} + \tfrac{i}{\sqrt2}|^2}{2} = \dfrac{\tfrac12|1+i|^2}{2} = \dfrac{\tfrac12\cdot 2}{2} = \tfrac12$.
+2. For $P(i)$ build the bra, **conjugating**: $\bra{i} = \tfrac1{\sqrt2}(\bra0 - i\bra1)$.
+3. $\braket{i}{\psi} = \tfrac1{\sqrt2}\big(\tfrac1{\sqrt2} - i\cdot\tfrac{i}{\sqrt2}\big) = \tfrac12(1 - i^2) = \tfrac12\cdot 2 = 1$.
+4. $P(i) = |1|^2 = 1$: of course, $\ket\psi$ *is* $\ket i$.
+</Steps>
+<Answer>$P(+) = \tfrac12$, $P(i) = 1$. Forgetting the conjugate in step 2 would give $\tfrac12(1 + i^2) = 0$, the opposite (wrong) answer.</Answer>
+</Exercise>
+
+<Exercise title="3.4 · Is this a valid state? Fix it" from="Problem set style">
+Is $\ket\phi = \ket0 + 2i\ket1$ a valid qubit state? If not, normalise it.
+<Steps>
+1. $|1|^2 + |2i|^2 = 1 + 4 = 5 \ne 1$, so not valid.
+2. Divide by the norm $\sqrt5$: $\ket\phi = \tfrac1{\sqrt5}\ket0 + \tfrac{2i}{\sqrt5}\ket1$.
+3. Check: $\tfrac15 + \tfrac45 = 1$ ✓.
+</Steps>
+<Answer>Not valid as written; normalised it is $\tfrac{1}{\sqrt5}(\ket0 + 2i\ket1)$, with $P(0) = 0.2$, $P(1) = 0.8$.</Answer>
+</Exercise>
+
+<Exercise title="3.5 · Global vs relative phase" from="Lecture 3: Bloch sphere">
+Are $\ket a = \tfrac{1}{\sqrt2}(\ket0 - \ket1)$ and $\ket b = \tfrac1{\sqrt2}(-\ket0 + \ket1)$ the same state? What about $\ket a$ and $\ket+$?
+<Steps>
+1. $\ket b = -1\cdot\tfrac1{\sqrt2}(\ket0 - \ket1) = -\ket a = e^{i\pi}\ket a$: a **global** phase.
+2. So $\ket a$ and $\ket b$ give identical probabilities for every measurement: same physical state.
+3. $\ket a = \ket-$ and $\ket+$ differ by a **relative** phase (sign on $\ket1$ only), and $P(+|-) = 0$.
+</Steps>
+<Answer>$\ket a$ and $\ket b$: same state. $\ket a$ and $\ket +$: different, in fact perfectly distinguishable.</Answer>
+</Exercise>
+
+<Exercise title="3.6 · Find θ and φ" from="Lecture 3: Bloch sphere">
+Find the Bloch angles of $\ket\psi = \tfrac{\sqrt3}{2}\ket0 + \tfrac{1}{2}e^{i\pi/4}\ket1$.
+<Steps>
+1. Match with $\cos\tfrac\theta2\ket0 + e^{i\varphi}\sin\tfrac\theta2\ket1$.
+2. $\cos\tfrac\theta2 = \tfrac{\sqrt3}2 \Rightarrow \tfrac\theta2 = \tfrac\pi6 \Rightarrow \theta = \tfrac\pi3$ (60°).
+3. Check $\sin\tfrac\pi6 = \tfrac12$ ✓, and $\varphi = \tfrac\pi4$ (45°).
+</Steps>
+<Answer>$\theta = 60°$, $\varphi = 45°$: in the northern hemisphere (more likely 0 than 1), turned 45° round from $\ket+$ towards $\ket i$.</Answer>
+</Exercise>
+
+<Check
+  q="A qubit is in $\ket-$. You measure 0 or 1 and get 1. You immediately measure + or −. What is $P(+)$?"
+  options={["0, because it was $\\ket-$", "1/2", "1", "It depends on the phase"]}
+  answer={1}
+  tag="last-step"
+  explain={"After the first measurement the state **is** $\\ket1$ (the old $\\ket-$ is gone). Then $P(+|1) = |0+1|^2/2 = 1/2$."}
+/>
+
+<Deeper title="Density matrices and mixed states" level="MSc">
+A probabilistic mixture "$\ket0$ with probability ½, $\ket1$ with ½" is **not** the same as $\ket+$, even though both give 50/50 for 0/1. To describe mixtures, use the **density matrix** $\rho = \sum_k p_k \ket{\psi_k}\bra{\psi_k}$. The mixture gives $\rho = \tfrac12 I$, while $\ket+$ gives $\ket+\bra+ = \tfrac12\begin{pmatrix}1&1\\1&1\end{pmatrix}$: the off-diagonal **coherences** are the relative phase. Probabilities become $P(\phi) = \bra\phi\rho\ket\phi = \mathrm{Tr}(\rho\ket\phi\bra\phi)$. On the Bloch sphere, mixed states fill the **inside** of the ball: $\rho = \tfrac12(I + x X + y Y + z Z)$ with $x^2+y^2+z^2\le1$. You will meet $I/2$ again in Lecture 9 as "what Bob holds before Alice's message". Nielsen & Chuang §2.4.
+</Deeper>
+
+<Deeper title="Measurement as projectors, and POVMs" level="MSc">
+A measurement in an orthonormal basis $\{\ket{k}\}$ is described by projectors $P_k = \ket k\bra k$ with $\sum_k P_k = I$. Outcome $k$ has probability $\bra\psi P_k\ket\psi$ and leaves the state $P_k\ket\psi/\sqrt{\bra\psi P_k\ket\psi}$. The most general measurement (a **POVM**) uses positive operators $E_k$ with $\sum E_k = I$, which need not be projectors; it can have more outcomes than the dimension. Example: the three-outcome "trine" measurement on a qubit. Nielsen & Chuang §2.2.3–2.2.6.
+</Deeper>
+
+<Deeper title="Is the randomness really fundamental?" level="PhD">
+Bell's theorem (Lecture 8) shows no *local* hidden-variable model reproduces quantum statistics, which is what makes "certified randomness" possible: a Bell violation proves the outputs could not have been predetermined (Pironio et al., Nature 464, 1021, 2010). Bohmian mechanics is deterministic but non-local, so the randomness question becomes "does the theory need non-locality?".
+</Deeper>

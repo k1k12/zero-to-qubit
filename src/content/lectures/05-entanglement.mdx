@@ -1,0 +1,185 @@
+---
+number: 5
+title: Entanglement
+lecturer: Dr Jonte Hance
+blurb: Putting qubits together with the tensor product, the states that refuse to be split apart, steering, why it still can't send messages faster than light, and Einstein's objection (EPR).
+minutes: 55
+prereqs: [3, 4]
+objectives:
+  - Compute tensor products of single-qubit states and write the result with $\ket{00}$-style labels
+  - Explain why $n$ qubits need $2^n$ amplitudes
+  - Decide whether a two-qubit state is separable or entangled
+  - Show that $\ket{\Phi^+}$ has the same form in the $\pm$ basis
+  - State the EPR argument and why it was untestable until Bell
+sheet:
+  - title: Tensor products
+    points:
+      - "$\\begin{pmatrix}a\\\\b\\end{pmatrix}\\otimes\\begin{pmatrix}c\\\\d\\end{pmatrix} = \\begin{pmatrix}ac\\\\ad\\\\bc\\\\bd\\end{pmatrix}$"
+      - "$\\ket{ab} = \\ket a\\otimes\\ket b$; order: $\\ket{00},\\ket{01},\\ket{10},\\ket{11}$"
+      - "n bits: n numbers. n qubits: $2^n$ amplitudes, $\\sum|\\alpha_{ij}|^2 = 1$"
+  - title: Entanglement
+    points:
+      - "Separable: $= \\ket a\\otimes\\ket b$. Otherwise entangled"
+      - "Test: separable $\\iff \\alpha_{00}\\alpha_{11} = \\alpha_{01}\\alpha_{10}$"
+      - "$\\ket{\\Phi^+} = \\tfrac1{\\sqrt2}(\\ket{00}+\\ket{11}) = \\tfrac1{\\sqrt2}(\\ket{++}+\\ket{--})$"
+  - title: Consequences
+    points:
+      - "Measuring one qubit updates the other's state instantly (steering)"
+      - "No signalling: the other side's statistics don't change"
+      - "EPR 1935: QM incomplete → local hidden variables? Bell 1964 made it testable"
+---
+import Callout from '../../components/Callout.astro';
+import Check from '../../components/Check.astro';
+import LockIn from '../../components/LockIn.astro';
+import Deeper from '../../components/Deeper.astro';
+import Exercise from '../../components/Exercise.astro';
+import Steps from '../../components/Steps.astro';
+import Answer from '../../components/Answer.astro';
+import TwoQubitLab from '../../components/TwoQubitLab.astro';
+
+## Recap: basis vectors
+
+Any vector is a weighted sum of **basis vectors** $e_i$ (a 1 in position $i$, 0 elsewhere): $\vec\omega = \sum_i \omega_i e_i$. For a qubit, $\ket0 = e_1$ and $\ket1 = e_2$.
+
+## Many bits vs many qubits
+
+For classical bits we just list them: two bits are a pair like $(1, 0)$. Formally that is the **Cartesian product** $\{0,1\}\times\{0,1\}$, and $n$ bits need $n$ numbers.
+
+Qubits combine with the **tensor product** $\otimes$ instead.
+
+<Callout type="notation" title="The tensor product ⊗">
+Multiply each entry of the first vector by the **whole** second vector and stack the results:
+
+$$
+\begin{pmatrix}a\\b\end{pmatrix}\otimes\begin{pmatrix}c\\d\end{pmatrix} = \begin{pmatrix}a\begin{pmatrix}c\\d\end{pmatrix}\\ b\begin{pmatrix}c\\d\end{pmatrix}\end{pmatrix} = \begin{pmatrix}ac\\ad\\bc\\bd\end{pmatrix}.
+$$
+
+Shorthand: $\ket0\otimes\ket1 = \ket0\ket1 = \ket{01}$. The **left** label is the **first** qubit.
+</Callout>
+
+So with $\ket{\psi_1} = \A{\alpha_1}\ket0 + \B{\beta_1}\ket1$ and $\ket{\psi_2} = \alpha_2\ket0 + \beta_2\ket1$:
+
+$$
+\ket{\psi_1}\otimes\ket{\psi_2} = \alpha_1\alpha_2\ket{00} + \alpha_1\beta_2\ket{01} + \beta_1\alpha_2\ket{10} + \beta_1\beta_2\ket{11}.
+$$
+
+Each extra qubit **doubles** the number of amplitudes: $n$ qubits need $2^n$ complex numbers. Fifty qubits already need about $10^{15}$, which is why classical computers struggle to simulate quantum ones.
+
+## Entanglement
+
+Every product above is a valid two-qubit state. But quantum mechanics allows **any** normalised combination
+
+$$
+\alpha_{00}\ket{00} + \alpha_{01}\ket{01} + \alpha_{10}\ket{10} + \alpha_{11}\ket{11},\qquad \textstyle\sum|\alpha_{ij}|^2 = 1,
+$$
+
+and most of these cannot be written as (qubit 1) ⊗ (qubit 2). Those are **entangled**.
+
+<Check
+  mode="predict"
+  q="Can $\tfrac{1}{\sqrt2}(\ket{00} + \ket{11})$ be split into (state of qubit 1) ⊗ (state of qubit 2)?"
+  options={["Yes, it is $\\ket{+}\\otimes\\ket{+}$", "Yes, it is $\\ket0\\otimes\\ket1$ plus $\\ket1\\otimes\\ket0$", "No"]}
+  answer={2}
+  explain="Suppose it were $(a\ket0 + b\ket1)(c\ket0 + d\ket1)$. Matching terms: $ac = bd = \tfrac1{\sqrt2}$ but $ad = bc = 0$. From $ad = 0$, either $a = 0$ (then $ac = 0$, contradiction) or $d = 0$ (then $bd = 0$, contradiction). So it is impossible: the state is entangled."
+/>
+
+<Callout type="idea" title="The quick test">
+A two-qubit state is separable **exactly when** $\alpha_{00}\alpha_{11} = \alpha_{01}\alpha_{10}$. (For a product, both sides equal $\alpha_1\beta_1\alpha_2\beta_2$; the converse also holds.) For $\tfrac1{\sqrt2}(\ket{00}+\ket{11})$: $\tfrac12 \ne 0$, so entangled.
+</Callout>
+
+Physically, an entangled state describes the pair **as a whole**; neither qubit has a state of its own. Measure the first qubit of $\tfrac1{\sqrt2}(\ket{00}+\ket{11})$ in 0/1:
+
+- get 0 (probability ½) → the state becomes $\ket{00}$, so the second qubit is now $\ket0$;
+- get 1 (probability ½) → the state becomes $\ket{11}$, so the second qubit is now $\ket1$.
+
+The update happens to the second qubit **however far away it is**.
+
+<TwoQubitLab />
+
+To see what entanglement does to each qubit on its own, open [the entanglement visual](/visuals#entangle).
+
+### Couldn't it just be secretly 00 or 11 all along?
+
+That is the natural guess: maybe each pair was really $\ket{00}$ or $\ket{11}$ from the start, and quantum mechanics only describes the average. Two problems:
+
+1. We can choose **which** measurement to do, and the correlations survive in every basis. For the Bell state,
+
+$$
+\tfrac1{\sqrt2}(\ket{00}+\ket{11}) = \tfrac1{\sqrt2}(\ket{++}+\ket{--}).
+$$
+
+Measure both in +/− and the results again agree perfectly. A pair that was "secretly 00" would give random, uncorrelated +/− results.
+2. Which basis you measure your qubit in decides which basis the other collapses into. This is **steering**.
+
+<Callout type="idea" title="Still no faster-than-light messages">
+Steering changes the distant qubit's state, but its owner cannot read that off: one measurement gives one random bit, and their results are 50/50 whatever you did. Only when you compare notes (by ordinary, slower-than-light communication) do the correlations appear. This is the **no-signalling** principle.
+</Callout>
+
+<LockIn ids={['l5-tensor', 'l5-grow', 'l5-ent', 'l5-test', 'l5-signal', 'l5-steer']} />
+
+## EPR: Einstein's objection
+
+Einstein disliked this. Special relativity says nothing, not even information, travels faster than light, and that "simultaneous" depends on how fast you are moving. An instantaneous update across space looked unphysical. ("God does not play dice" was his complaint about quantum randomness.)
+
+In 1935 **Einstein, Podolsky and Rosen** (EPR) argued: if measuring one particle lets us predict the other's result with certainty, without disturbing it, then that result must have been an "element of reality" all along. Quantum mechanics doesn't include those values, so it must be **incomplete**: particles secretly carry instructions. Such theories are called **local hidden-variable (LHV) theories**.
+
+For almost 30 years there seemed to be no experiment that could tell QM and LHV theories apart. Then in 1964 John Bell found one. That is Lecture 8.
+
+<LockIn ids={['l5-epr']} />
+
+## Worked exercises
+
+<Exercise title="5.1 · Expand a tensor product" from="Lecture 5/6: try this out">
+Compute $\ket+\otimes\ket+$ as a vector and in ket notation. Is it entangled?
+<Steps>
+1. $\ket+ = \tfrac1{\sqrt2}\begin{pmatrix}1\\1\end{pmatrix}$.
+2. $\ket+\otimes\ket+ = \tfrac12\begin{pmatrix}1\cdot1\\1\cdot1\\1\cdot1\\1\cdot1\end{pmatrix} = \tfrac12\begin{pmatrix}1\\1\\1\\1\end{pmatrix}$.
+3. In kets: $\tfrac12(\ket{00}+\ket{01}+\ket{10}+\ket{11})$.
+4. Test: $\alpha_{00}\alpha_{11} = \tfrac14 = \alpha_{01}\alpha_{10}$, so separable (as it must be: we built it as a product).
+</Steps>
+<Answer>$\tfrac12(\ket{00}+\ket{01}+\ket{10}+\ket{11})$: an equal superposition of all four 2-bit strings, but **not** entangled.</Answer>
+</Exercise>
+
+<Exercise title="5.2 · Separable or entangled?" from="Problem set style">
+Classify (a) $\tfrac12(\ket{00} - \ket{01} + \ket{10} - \ket{11})$, (b) $\tfrac1{\sqrt2}(\ket{01} + \ket{10})$, (c) $\tfrac{1}{\sqrt3}\ket{00} + \sqrt{\tfrac23}\ket{11}$. Factor any separable one.
+<Steps>
+1. (a) $\alpha_{00}\alpha_{11} = \tfrac12\cdot(-\tfrac12) = -\tfrac14$ and $\alpha_{01}\alpha_{10} = (-\tfrac12)(\tfrac12) = -\tfrac14$. Equal, so separable.
+2. Factor (a): group by the first qubit: $\tfrac12\big(\ket0(\ket0 - \ket1) + \ket1(\ket0 - \ket1)\big) = \tfrac12(\ket0+\ket1)(\ket0-\ket1) = \ket+\ket-$.
+3. (b) $\alpha_{00}\alpha_{11} = 0$ but $\alpha_{01}\alpha_{10} = \tfrac12$. Not equal: entangled (it is the Bell state $\ket{\Psi^+}$).
+4. (c) $\alpha_{00}\alpha_{11} = \tfrac{\sqrt2}{3} \ne 0 = \alpha_{01}\alpha_{10}$: entangled, though not maximally (unequal weights).
+</Steps>
+<Answer>(a) separable, $= \ket+\otimes\ket-$; (b) entangled; (c) entangled.</Answer>
+</Exercise>
+
+<Exercise title="5.3 · Bell state in the ± basis" from="Lecture 5 exercise: prove it by changing basis">
+Show $\tfrac{1}{\sqrt2}(\ket{00}+\ket{11}) = \tfrac1{\sqrt2}(\ket{++}+\ket{--})$.
+<Steps>
+1. Write $\ket\pm = \tfrac1{\sqrt2}(\ket0\pm\ket1)$ and expand $\ket{++} = \tfrac12(\ket0+\ket1)(\ket0+\ket1) = \tfrac12(\ket{00}+\ket{01}+\ket{10}+\ket{11})$.
+2. $\ket{--} = \tfrac12(\ket0-\ket1)(\ket0-\ket1) = \tfrac12(\ket{00}-\ket{01}-\ket{10}+\ket{11})$.
+3. Add: $\ket{++}+\ket{--} = \tfrac12(2\ket{00} + 2\ket{11}) = \ket{00}+\ket{11}$.
+4. Multiply by $\tfrac1{\sqrt2}$ on both sides.
+</Steps>
+<Answer>Proved. The cross terms cancel, so perfect correlation appears in the +/− basis too, which a "secretly 00 or 11" model cannot reproduce.</Answer>
+</Exercise>
+
+<Exercise title="5.4 · Measuring one half" from="Lecture 5: entanglement">
+For $\ket\psi = \tfrac1{\sqrt2}(\ket{01} - \ket{10})$, you measure the first qubit in 0/1 and get 1. What is the second qubit's state? If instead you measure the first in +/− and get +, what then?
+<Steps>
+1. Keep only the terms where qubit 1 is 1: $-\tfrac1{\sqrt2}\ket{10}$. Renormalise: $\ket{10}$ (dropping the global minus). Qubit 2 is $\ket0$.
+2. For the +/− case, rewrite in that basis. Using $\ket0 = \tfrac{1}{\sqrt2}(\ket+ + \ket-)$, $\ket1 = \tfrac1{\sqrt2}(\ket+ - \ket-)$ on both qubits and simplifying gives $\ket\psi = \tfrac1{\sqrt2}(\ket{-+} - \ket{+-})$.
+3. Keep the terms with qubit 1 in $\ket+$: $-\tfrac1{\sqrt2}\ket{+-}$, so qubit 2 is $\ket-$.
+</Steps>
+<Answer>Result 1 → second qubit $\ket0$; result + → second qubit $\ket-$. This singlet state is anti-correlated in **every** basis, the property Lecture 8 relies on.</Answer>
+</Exercise>
+
+<Deeper title="Schmidt decomposition and entanglement entropy" level="MSc">
+Any two-qubit pure state can be written $\ket\psi = \sqrt{\lambda_0}\ket{u_0}\ket{v_0} + \sqrt{\lambda_1}\ket{u_1}\ket{v_1}$ with orthonormal $\{u_i\}$, $\{v_i\}$ (the singular value decomposition of the $2\times2$ amplitude matrix $(\alpha_{ij})$). It is separable exactly when one $\lambda$ is 0, which is the determinant test above in disguise: $\det(\alpha_{ij}) = \alpha_{00}\alpha_{11} - \alpha_{01}\alpha_{10}$. The **entanglement entropy** $E = -\sum\lambda_i\log_2\lambda_i$ measures how entangled it is: 1 ebit for Bell states, about 0.92 for exercise 5.2(c). Nielsen & Chuang §2.5.
+</Deeper>
+
+<Deeper title="Reduced states and the no-signalling proof" level="MSc">
+The state of one half of a pair is the **partial trace** $\rho_B = \mathrm{Tr}_A\ket\psi\bra\psi$. For any Bell state $\rho_B = I/2$. Whatever unitary or measurement Alice does on her side, Bob's $\rho_B$ (averaged over her unknown results) is unchanged, because $\mathrm{Tr}_A[(U_A\otimes I)\rho(U_A^\dagger\otimes I)] = \mathrm{Tr}_A\rho$. That one line is the no-signalling theorem.
+</Deeper>
+
+<Deeper title="Mixed-state entanglement is hard" level="PhD">
+For mixed states, "separable" means a convex mixture of products. Deciding it is NP-hard in general (Gurvits 2003). For two qubits (and qubit–qutrit) the Peres–Horodecki **PPT criterion** is necessary and sufficient; in higher dimensions "bound entangled" states exist that PPT misses. Horodecki et al., Rev. Mod. Phys. 81, 865 (2009) is the standard review.
+</Deeper>

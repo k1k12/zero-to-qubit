@@ -1,0 +1,14 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Accessibility" wide={false}>
+  <h1>Accessibility</h1>
+  <ul>
+    <li><strong>Display settings</strong> (top right): light or dark theme, larger text, reduced motion. Saved in your browser; the theme follows your system setting by default.</li>
+    <li><strong>Keyboard</strong>: every control works with the keyboard. <kbd>/</kbd> opens the notation decoder. Flashcards: <kbd>Space</kbd>, <kbd>1</kbd>, <kbd>2</kbd>. Code lab: <kbd>Ctrl</kbd>+<kbd>Enter</kbd> runs; <kbd>Tab</kbd> indents, so press <kbd>Esc</kbd> then <kbd>Tab</kbd> to leave the editor. Draggable diagrams also respond to arrow keys.</li>
+    <li><strong>Maths</strong> is real text (KaTeX with MathML), so screen readers can read it and you can zoom without blur.</li>
+    <li><strong>Colour is never the only signal</strong>: probabilities have numbers next to the bars, test results have ✓/✗, mastery labels have words.</li>
+    <li><strong>Print</strong>: each lecture has a one-page summary designed for A4.</li>
+  </ul>
+  <p>Something hard to use? Note it in the repo's issues so it can be fixed.</p>
+</Base>

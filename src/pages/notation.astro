@@ -1,0 +1,34 @@
+---
+import Base from '../layouts/Base.astro';
+import { NOTATION } from '../data/notation';
+import { slugOf } from '../data/meta';
+import { tex } from '../lib/tex';
+---
+<Base title="Notation decoder">
+  <div class="eyebrow">Reference</div>
+  <h1>Notation decoder</h1>
+  <p class="muted" style="max-width:760px">Every symbol used in the module, in plain words, with the lecture where it first appears. Press <kbd>/</kbd> on any page to jump here.</p>
+  <label for="search" class="sr-only">Search notation</label>
+  <input type="text" id="search" placeholder="Search: ket, dagger, tensor, phase…" style="max-width:520px" />
+  <table style="margin-top:1rem">
+    <thead><tr><th style="width:22%">Symbol</th><th style="width:20%">Name</th><th>Meaning</th><th>First seen</th></tr></thead>
+    <tbody>
+      {NOTATION.map((n) => (
+        <tr data-text={`${n.name} ${n.means} ${n.sym}`.toLowerCase()}>
+          <td set:html={tex(n.sym)} />
+          <td>{n.name}</td>
+          <td set:html={tex(n.means)} />
+          <td><a href={`/lectures/${slugOf(n.lecture)}`}>L{n.lecture}</a></td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</Base>
+<script>
+  const s = document.getElementById('search') as HTMLInputElement;
+  if (location.hash === '#search') s.focus();
+  s.addEventListener('input', () => {
+    const q = s.value.toLowerCase().trim();
+    document.querySelectorAll<HTMLElement>('tbody tr').forEach((r) => (r.hidden = !!q && !r.dataset.text!.includes(q)));
+  });
+</script>

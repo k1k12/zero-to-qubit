@@ -1,0 +1,42 @@
+---
+// Correlation vs angle: quantum (−cos θ) against the best simple hidden-variable model.
+---
+<div class="lab bellcurve">
+  <div class="eyebrow">Visual · why quantum correlations are "too strong"</div>
+  <p class="notice">For the singlet, Alice and Bob's results are correlated by E(θ) = −cos θ, where θ is the angle between their detectors. A natural hidden-variable model (each pair carries a random hidden direction) gives a <strong>straight line</strong> instead. The two agree at 0°, 90° and 180°, but in between the quantum curve bends further. CHSH uses the angles where the gap is biggest (45° and 135°), and that gap is what pushes |S| past 2.</p>
+  <svg class="plot" viewBox="0 0 520 300" width="100%" style="max-width:720px;display:block" role="img" aria-label="Plot of correlation against angle"></svg>
+  <label class="small">Angle between detectors θ: <span class="v"></span><input type="range" class="th" min="0" max="180" value="45" /></label>
+  <div class="read small"></div>
+</div>
+<script>
+  document.querySelectorAll<HTMLElement>('.bellcurve').forEach((root) => {
+    const q = <T,>(s: string) => root.querySelector(s) as T;
+    const X0 = 50, X1 = 500, Y0 = 20, Y1 = 260;
+    const sx = (d: number) => X0 + ((X1 - X0) * d) / 180, sy = (e: number) => Y0 + ((Y1 - Y0) * (1 - e)) / 2;
+    const qm = (d: number) => -Math.cos((d * Math.PI) / 180), lhv = (d: number) => -1 + (2 * d) / 180;
+    let base = '';
+    for (const e of [-1, -0.5, 0, 0.5, 1]) base += `<line x1="${X0}" x2="${X1}" y1="${sy(e)}" y2="${sy(e)}" stroke="var(--line)"/><text x="${X0 - 8}" y="${sy(e) + 4}" text-anchor="end" class="svg-muted" font-size="11">${e}</text>`;
+    for (const d of [0, 45, 90, 135, 180]) base += `<line x1="${sx(d)}" x2="${sx(d)}" y1="${Y0}" y2="${Y1}" stroke="var(--line)"/><text x="${sx(d)}" y="${Y1 + 16}" text-anchor="middle" class="svg-muted" font-size="11">${d}°</text>`;
+    let qp = '', lp = '', gap = '';
+    for (let d = 0; d <= 180; d += 2) { qp += `${d ? 'L' : 'M'}${sx(d)},${sy(qm(d))}`; lp += `${d ? 'L' : 'M'}${sx(d)},${sy(lhv(d))}`; }
+    for (let d = 0; d <= 180; d += 2) gap += `${d ? 'L' : 'M'}${sx(d)},${sy(qm(d))}`;
+    for (let d = 180; d >= 0; d -= 2) gap += `L${sx(d)},${sy(lhv(d))}`;
+    base += `<path d="${gap}Z" fill="var(--bad)" fill-opacity="0.12"/>
+      <path d="${lp}" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-dasharray="7 5"/>
+      <path d="${qp}" fill="none" stroke="var(--accent)" stroke-width="3"/>
+      <text x="${sx(100)}" y="${sy(lhv(100)) + 22}" class="svg-muted" font-size="12">hidden-variable model (straight line)</text>
+      <text x="${sx(112)}" y="${sy(qm(112)) - 14}" text-anchor="end" fill="var(--accent)" font-size="12">quantum: −cos θ</text>
+      <text x="${(X0 + X1) / 2}" y="${Y1 + 34}" text-anchor="middle" class="svg-muted" font-size="11">angle between Alice's and Bob's detectors</text>`;
+    const th = q<HTMLInputElement>('.th');
+    function draw() {
+      const d = +th.value;
+      q<HTMLElement>('.v').textContent = `${d}°`;
+      q<SVGSVGElement>('.plot').innerHTML = base + `<line x1="${sx(d)}" x2="${sx(d)}" y1="${Y0}" y2="${Y1}" stroke="var(--shaky)" stroke-width="2"/>
+        <circle cx="${sx(d)}" cy="${sy(qm(d))}" r="6" fill="var(--accent)"/><circle cx="${sx(d)}" cy="${sy(lhv(d))}" r="6" fill="var(--muted)"/>`;
+      const g = Math.abs(qm(d) - lhv(d));
+      q<HTMLElement>('.read').innerHTML = `At θ = ${d}°: quantum E = ${qm(d).toFixed(3)}, hidden-variable E = ${lhv(d).toFixed(3)}, gap = ${g.toFixed(3)}. ` +
+        (Math.abs(d - 45) < 1 || Math.abs(d - 135) < 1 ? 'This is a CHSH angle: four such gaps add up to 4 × 0.207 = 0.83, which is exactly 2√2 − 2.' : 'Find where the gap is biggest.');
+    }
+    th.addEventListener('input', draw); draw();
+  });
+</script>

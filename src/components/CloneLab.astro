@@ -1,0 +1,55 @@
+---
+// Lecture 7: try to use CNOT as a copying machine and see where it breaks.
+---
+<div class="lab clone-lab">
+  <div class="eyebrow">Explore · can a CNOT copy a qubit?</div>
+  <p class="notice">The "cloning machine" here is a CNOT: your qubit is the control, the blank qubit |0⟩ is the target. <strong>Notice:</strong> it copies |0⟩ and |1⟩ perfectly, but for anything in between the output is entangled, not two copies.</p>
+  <div class="lab-grid">
+    <div>
+      <label class="small">Input: |ψ⟩ = cos(t)|0⟩ + sin(t)|1⟩, t = <span class="v-t"></span>
+        <input type="range" class="t" min="0" max="90" value="45" />
+      </label>
+      <div class="btn-row">
+        <button class="btn small secondary" data-t="0" type="button">|0⟩</button>
+        <button class="btn small secondary" data-t="90" type="button">|1⟩</button>
+        <button class="btn small secondary" data-t="45" type="button">|+⟩</button>
+      </div>
+      <table>
+        <thead><tr><th></th><th>|00⟩</th><th>|01⟩</th><th>|10⟩</th><th>|11⟩</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">Wanted: |ψ⟩|ψ⟩</th><td class="w0"></td><td class="w1"></td><td class="w2"></td><td class="w3"></td></tr>
+          <tr><th scope="row">CNOT gives</th><td class="g0"></td><td class="g1"></td><td class="g2"></td><td class="g3"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <div class="eyebrow">How close is the output to two copies?</div>
+      <div class="fid"></div>
+      <p class="explain small"></p>
+    </div>
+  </div>
+</div>
+<script>
+  import { bars } from '../lib/ui';
+  document.querySelectorAll<HTMLElement>('.clone-lab').forEach((root) => {
+    const q = <T,>(s: string) => root.querySelector(s) as T;
+    const tIn = q<HTMLInputElement>('.t');
+    function draw() {
+      const t = (+tIn.value * Math.PI) / 180, a = Math.cos(t), b = Math.sin(t);
+      const want = [a * a, a * b, b * a, b * b], got = [a, 0, 0, b];
+      const f = (x: number) => (Math.abs(x) < 1e-9 ? '0' : x.toFixed(3));
+      want.forEach((v, i) => (q<HTMLElement>(`.w${i}`).textContent = f(v)));
+      got.forEach((v, i) => { const el = q<HTMLElement>(`.g${i}`); el.textContent = f(v); el.style.color = Math.abs(v - want[i]) > 1e-6 ? 'var(--bad)' : 'var(--good)'; });
+      const ip = want.reduce((s, w, i) => s + w * got[i], 0);
+      const F = ip * ip;
+      q<HTMLElement>('.v-t').textContent = `${tIn.value}°`;
+      bars(q<HTMLElement>('.fid'), [{ label: 'Fidelity |⟨ψψ|output⟩|²', p: F, colour: F > 0.999 ? 'var(--good)' : 'var(--shaky)' }]);
+      q<HTMLElement>('.explain').innerHTML = F > 0.999
+        ? 'Perfect copy: this input is a basis state, and copying known basis states is allowed.'
+        : `Not a copy. Linearity forces CNOT(α|0⟩+β|1⟩)|0⟩ = α|00⟩ + β|11⟩, but a copy needs α²|00⟩ + αβ|01⟩ + αβ|10⟩ + β²|11⟩. The cross terms |01⟩ and |10⟩ can never appear. No other unitary does better for every input: that is the no-cloning theorem.`;
+    }
+    tIn.addEventListener('input', draw);
+    root.querySelectorAll<HTMLButtonElement>('[data-t]').forEach((b) => b.addEventListener('click', () => { tIn.value = b.dataset.t!; draw(); }));
+    draw();
+  });
+</script>

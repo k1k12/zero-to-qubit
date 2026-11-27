@@ -1,0 +1,146 @@
+---
+// Lecture 9: step through quantum teleportation on a real (simulated) 3-qubit state.
+---
+<div class="lab tele-lab">
+  <div class="eyebrow">Explore · teleportation, one step at a time</div>
+  <p class="notice">q0 holds Alice's unknown state |ψ⟩ = <span class="amp-a">α</span>|0⟩ + <span class="amp-b">β</span>|1⟩. q1 is Alice's half of the shared pair, q2 is Bob's half. Step through and watch where <span class="amp-a">α</span> and <span class="amp-b">β</span> go.</p>
+  <div class="lab-grid" style="grid-template-columns:minmax(0,1.2fr) minmax(0,1fr)">
+    <div>
+      <svg class="circuit" viewBox="0 0 560 200" role="img" aria-label="Teleportation circuit" style="width:100%;background:var(--bg);border-radius:12px;border:1px solid var(--line)">
+        <rect class="hl" y="8" height="184" rx="8" fill="color-mix(in srgb, var(--accent) 22%, transparent)" />
+        <g stroke="var(--muted)" stroke-width="1.5">
+          <line x1="70" y1="50" x2="540" y2="50" /><line x1="70" y1="100" x2="540" y2="100" /><line x1="70" y1="150" x2="540" y2="150" />
+        </g>
+        <text x="8" y="55" class="svg-text" font-size="14">q0 |ψ⟩</text>
+        <text x="8" y="105" class="svg-text" font-size="14">q1 |0⟩</text>
+        <text x="8" y="155" class="svg-text" font-size="14">q2 |0⟩</text>
+        <text x="8" y="185" class="svg-muted" font-size="11">Bob</text>
+        <!-- stage 1: H on q1 -->
+        <rect x="100" y="86" width="28" height="28" rx="4" fill="var(--bg-3)" stroke="var(--accent)" /><text x="108" y="105" class="svg-text" font-size="15">H</text>
+        <!-- stage 2: CNOT q1 -> q2 -->
+        <line x1="175" y1="100" x2="175" y2="162" stroke="var(--accent)" stroke-width="2" /><circle cx="175" cy="100" r="5" fill="var(--accent)" /><circle cx="175" cy="150" r="11" fill="none" stroke="var(--accent)" stroke-width="2" />
+        <!-- stage 3: CNOT q0 -> q1 -->
+        <line x1="250" y1="50" x2="250" y2="112" stroke="var(--accent)" stroke-width="2" /><circle cx="250" cy="50" r="5" fill="var(--accent)" /><circle cx="250" cy="100" r="11" fill="none" stroke="var(--accent)" stroke-width="2" />
+        <!-- stage 4: H on q0 -->
+        <rect x="306" y="36" width="28" height="28" rx="4" fill="var(--bg-3)" stroke="var(--accent)" /><text x="314" y="55" class="svg-text" font-size="15">H</text>
+        <!-- stage 5: measure -->
+        <rect x="372" y="36" width="34" height="28" rx="4" fill="var(--bg-3)" stroke="var(--shaky)" /><text x="377" y="55" class="svg-text" font-size="12">M m₁</text>
+        <rect x="372" y="86" width="34" height="28" rx="4" fill="var(--bg-3)" stroke="var(--shaky)" /><text x="377" y="105" class="svg-text" font-size="12">M m₂</text>
+        <line x1="389" y1="114" x2="460" y2="138" stroke="var(--shaky)" stroke-dasharray="4 3" /><line x1="389" y1="64" x2="500" y2="138" stroke="var(--shaky)" stroke-dasharray="4 3" />
+        <!-- stage 6: corrections -->
+        <rect x="446" y="136" width="28" height="28" rx="4" fill="var(--bg-3)" stroke="var(--beta)" /><text x="453" y="155" class="svg-text" font-size="13">X<tspan font-size="9" dy="-6">m₂</tspan></text>
+        <rect x="490" y="136" width="28" height="28" rx="4" fill="var(--bg-3)" stroke="var(--beta)" /><text x="497" y="155" class="svg-text" font-size="13">Z<tspan font-size="9" dy="-6">m₁</tspan></text>
+        <line x1="140" y1="20" x2="140" y2="190" stroke="var(--line)" stroke-dasharray="2 4" /><text x="96" y="18" class="svg-muted" font-size="10">shared pair made</text>
+      </svg>
+      <div class="btn-row">
+        <button class="btn small secondary prev" type="button">← Back</button>
+        <button class="btn small next" type="button">Next step →</button>
+        <button class="btn small secondary restart" type="button">Restart</button>
+      </div>
+      <h4 class="stage-title" style="margin:.4rem 0" aria-live="polite"></h4>
+      <p class="stage-text"></p>
+      <div class="grouping"></div>
+    </div>
+    <div>
+      <label class="small">Pick |ψ⟩: |α| = <span class="v-a"></span>
+        <input type="range" class="a" min="0" max="100" value="80" />
+      </label>
+      <label class="small">relative phase φ = <span class="v-p"></span>
+        <input type="range" class="p" min="0" max="359" value="0" />
+      </label>
+      <p class="psi" style="font-size:1.1rem"></p>
+      <div class="eyebrow">Full 3-qubit state |q0 q1 q2⟩</div>
+      <div class="full small" style="font-family:var(--mono);line-height:1.9;word-break:break-word"></div>
+      <div class="bob card small" style="margin-top:1rem;padding:.7rem 1rem"></div>
+    </div>
+  </div>
+</div>
+<script>
+  import { State, GATES, c, mul, expi, abs2, fidelity, type C } from '../lib/sim';
+  import { amp, ketString } from '../lib/ui';
+
+  document.querySelectorAll<HTMLElement>('.tele-lab').forEach((root) => {
+    const q = <T,>(s: string) => root.querySelector(s) as T;
+    const aIn = q<HTMLInputElement>('.a'), pIn = q<HTMLInputElement>('.p');
+    let stage = 0;
+    let outcome: [0 | 1, 0 | 1] | null = null;
+    const hlX = [0, 92, 160, 235, 298, 364, 440];
+    const hlW = [0, 44, 30, 30, 44, 50, 86];
+    const psi = (): [C, C] => { const a = +aIn.value / 100; return [c(a), mul(expi((+pIn.value * Math.PI) / 180), c(Math.sqrt(1 - a * a)))]; };
+
+    function build(upTo: number): State {
+      const [a, b] = psi();
+      const s = State.fromQubits([[a, b], [c(1), c(0)], [c(1), c(0)]]);
+      if (upTo >= 1) s.apply1(GATES.H, 1);
+      if (upTo >= 2) s.cx(1, 2);
+      if (upTo >= 3) s.cx(0, 1);
+      if (upTo >= 4) s.apply1(GATES.H, 0);
+      if (upTo >= 5) {
+        outcome ??= [Math.random() < 0.5 ? 0 : 1, Math.random() < 0.5 ? 0 : 1];
+        // project onto the chosen outcome
+        s.amps = s.amps.map((z, i) => ((i >> 2) === outcome![0] && ((i >> 1) & 1) === outcome![1] ? mul(z, c(2)) : c(0)));
+      }
+      if (upTo >= 6) { if (outcome![1]) s.apply1(GATES.X, 2); if (outcome![0]) s.apply1(GATES.Z, 2); }
+      return s;
+    }
+    const bobOf = (s: State, m1: number, m2: number): [C, C] => [s.amps[(m1 << 2) | (m2 << 1)], s.amps[(m1 << 2) | (m2 << 1) | 1]];
+    const fixFor = (m1: number, m2: number) => (['nothing', 'X', 'Z', 'X then Z'][m1 * 2 + m2]);
+    const bobStr = (x: [C, C]) => `<span class="amp-a">${amp(x[0])}</span>|0⟩ + <span class="amp-b">${amp(x[1])}</span>|1⟩`.replace('+ <span class="amp-b">−', '− <span class="amp-b">');
+
+    const titles = [
+      'Step 0 · Start', 'Step 1 · H on q1', 'Step 2 · CNOT q1 → q2: the shared pair', "Step 3 · Alice's CNOT (q0 → q1)",
+      "Step 4 · Alice's H on q0", 'Step 5 · Alice measures and phones Bob', "Step 6 · Bob's correction",
+    ];
+    const texts = [
+      'Three qubits: Alice\'s unknown |ψ⟩ and two |0⟩s. Nothing is entangled yet.',
+      'H puts q1 into |+⟩ = (|0⟩ + |1⟩)/√2.',
+      'CNOT copies q1\'s 0/1 value into q2, giving the Bell pair |Φ⁺⟩ = (|00⟩ + |11⟩)/√2. Alice keeps q1, Bob takes q2 far away. This happens before Alice even has |ψ⟩.',
+      'Alice uses her unknown qubit as the control. Now all three qubits are entangled together; α and β are spread across the whole state.',
+      'The key moment. Group the state by Alice\'s two qubits (the table below): for each of her four possible results, Bob\'s qubit already holds α and β, just possibly flipped (X) and/or phase-flipped (Z). Each result has probability 1/4.',
+      '',
+      '',
+    ];
+
+    function draw() {
+      const [a, b] = psi();
+      q<HTMLElement>('.v-a').textContent = (+aIn.value / 100).toFixed(2);
+      q<HTMLElement>('.v-p').textContent = `${pIn.value}°`;
+      q<HTMLElement>('.psi').innerHTML = `|ψ⟩ = <span class="amp-a">${amp(a)}</span>|0⟩ + <span class="amp-b">${amp(b)}</span>|1⟩`;
+      const hl = q<SVGRectElement>('.hl');
+      hl.setAttribute('x', String(hlX[stage])); hl.setAttribute('width', String(hlW[stage])); hl.style.display = stage ? '' : 'none';
+      const s = build(stage);
+      q<HTMLElement>('.stage-title').textContent = titles[stage];
+      let text = texts[stage];
+      if (stage === 5) text = `Alice measured <strong>m₁m₂ = ${outcome![0]}${outcome![1]}</strong> (random: try Restart to get others). Her qubits are destroyed into plain 0/1 values, and she sends the two bits to Bob by an ordinary phone call or network. Bob's qubit now holds ${bobStr(bobOf(s, outcome![0], outcome![1]))}. So he must apply: <strong>${fixFor(...outcome!)}</strong>.`;
+      if (stage === 6) {
+        const bob = bobOf(s, outcome![0], outcome![1]);
+        const F = fidelity([a, b], bob);
+        text = `Bob applied ${fixFor(...outcome!)} and now holds ${bobStr(bob)}: exactly Alice's original |ψ⟩ (fidelity ${F.toFixed(4)}). Alice no longer has it, so nothing was cloned, and nothing travelled faster than light: Bob needed her two bits.`;
+      }
+      q<HTMLElement>('.stage-text').innerHTML = text;
+      q<HTMLElement>('.full').innerHTML = ketString(s.amps, 3) + (stage >= 5 ? '<br><span class="muted">(after the measurement, renormalised)</span>' : '');
+      // grouping table after Alice's H
+      const g = q<HTMLElement>('.grouping');
+      if (stage === 4) {
+        const rows = [0, 1].flatMap((m1) => [0, 1].map((m2) => {
+          const [x, y] = bobOf(s, m1, m2);
+          const p = (abs2(x) + abs2(y));
+          const sym = ['<span class="amp-a">α</span>|0⟩ + <span class="amp-b">β</span>|1⟩', '<span class="amp-a">α</span>|1⟩ + <span class="amp-b">β</span>|0⟩', '<span class="amp-a">α</span>|0⟩ − <span class="amp-b">β</span>|1⟩', '<span class="amp-a">α</span>|1⟩ − <span class="amp-b">β</span>|0⟩'][m1 * 2 + m2];
+          return `<tr><td><code>${m1}${m2}</code></td><td>${(p).toFixed(2)}</td><td>${sym}<br><span class="small muted">= ${ketString([mul(x, c(2)), mul(y, c(2))], 1)}</span></td><td>${fixFor(m1, m2)}</td></tr>`;
+        })).join('');
+        g.innerHTML = `<table><thead><tr><th>Alice gets</th><th>Probability</th><th>Bob then holds</th><th>Bob applies</th></tr></thead><tbody>${rows}</tbody></table>`;
+      } else g.innerHTML = '';
+      const bob = q<HTMLElement>('.bob');
+      if (stage < 2) bob.innerHTML = '<strong>Bob:</strong> has a plain |0⟩ so far.';
+      else if (stage < 5) bob.innerHTML = '<strong>What Bob could see right now:</strong> nothing useful. On its own his qubit is maximally mixed (density matrix I/2, Bloch vector at the centre of the sphere): measuring it gives 0 or 1 with 50% each, whatever ψ is. That is why there is no faster-than-light signalling.';
+      else bob.innerHTML = `<strong>Bob:</strong> knows m₁m₂ = ${outcome![0]}${outcome![1]}, so he knows which fix to apply.`;
+      q<HTMLButtonElement>('.prev').disabled = stage === 0;
+      q<HTMLButtonElement>('.next').disabled = stage === 6;
+    }
+    q<HTMLButtonElement>('.next').addEventListener('click', () => { stage = Math.min(6, stage + 1); draw(); });
+    q<HTMLButtonElement>('.prev').addEventListener('click', () => { stage = Math.max(0, stage - 1); if (stage < 5) outcome = null; draw(); });
+    q<HTMLButtonElement>('.restart').addEventListener('click', () => { stage = 0; outcome = null; draw(); });
+    aIn.addEventListener('input', draw); pIn.addEventListener('input', draw);
+    draw();
+  });
+</script>

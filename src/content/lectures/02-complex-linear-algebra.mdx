@@ -1,0 +1,282 @@
+---
+number: 2
+title: Complex linear algebra
+lecturer: Dr Ittoop Puthoor & Dr Jonte Hance
+blurb: The toolkit for the rest of the module. Vectors and kets, matrices, complex numbers, Euler's formula and phase, built up from nothing.
+minutes: 60
+prereqs: [1]
+objectives:
+  - Read and write kets $\ket{\psi}$ and bras $\bra{\psi}$, and compute $\braket{a}{b}$
+  - Compute norms, dot products, traces, matrix sums and products
+  - Explain why matrix multiplication is not commutative, and what an eigenvector is
+  - Do arithmetic with complex numbers, including conjugate, modulus and division
+  - Convert between $a + bi$ and polar form $re^{i\theta}$
+sheet:
+  - title: Vectors and Dirac notation
+    points:
+      - "Ket = column vector: $\\ket{v} = \\begin{pmatrix}v_1\\\\v_2\\end{pmatrix}$"
+      - "Bra = conjugate transpose (row): $\\bra{v} = (\\bar v_1,\\ \\bar v_2)$"
+      - "$\\braket{a}{b} = \\bar a_1 b_1 + \\bar a_2 b_2$ (a number); $\\ket a\\bra b$ is a matrix"
+      - "Norm $\\|v\\| = \\sqrt{\\braket{v}{v}}$; unit vector $\\hat v = v/\\|v\\|$"
+  - title: Matrices
+    points:
+      - "$(AB)_{ij} = \\sum_k A_{ik}B_{kj}$; needs cols(A) = rows(B); $m\\times n$ times $n\\times p$ gives $m\\times p$"
+      - "Usually $AB \\ne BA$; addition is element-wise and commutative"
+      - "Trace = sum of diagonal; eigenvector: $A\\ket v = a\\ket v$"
+  - title: Complex numbers
+    points:
+      - "$z = a + bi$, $i^2 = -1$; $\\mathrm{Re}\\,z = a$, $\\mathrm{Im}\\,z = b$ (a real number)"
+      - "$\\bar z = a - bi$; $z\\bar z = a^2 + b^2 = |z|^2$; $|z| = \\sqrt{a^2+b^2}$"
+      - "Divide: $\\dfrac{w}{z} = \\dfrac{w\\bar z}{|z|^2}$"
+  - title: Polar form and phase
+    points:
+      - "$e^{i\\theta} = \\cos\\theta + i\\sin\\theta$; $z = re^{i\\theta}$, $r = |z|$, $\\theta = \\arg z$"
+      - "Multiply: lengths multiply, angles add: $r_1e^{i\\theta_1}r_2e^{i\\theta_2} = r_1r_2e^{i(\\theta_1+\\theta_2)}$"
+      - "$|e^{i\\theta}| = 1$: a phase factor never changes a size"
+      - "Watch the quadrant when using $\\tan^{-1}(b/a)$"
+---
+import Callout from '../../components/Callout.astro';
+import Check from '../../components/Check.astro';
+import LockIn from '../../components/LockIn.astro';
+import Deeper from '../../components/Deeper.astro';
+import Exercise from '../../components/Exercise.astro';
+import Steps from '../../components/Steps.astro';
+import Answer from '../../components/Answer.astro';
+import ComplexPlane from '../../components/ComplexPlane.astro';
+
+## Why this lecture matters
+
+Every later lecture is this maths in disguise. A qubit is a **vector** with two **complex** entries. A gate is a **matrix**. A measurement probability is the **squared size** of a complex number. If you are solid here, the rest of the module is mostly bookkeeping.
+
+## Vectors
+
+A **scalar** is just a number. A **vector** has size *and* direction. In 3D you can write it as amounts along three unit directions $e_x, e_y, e_z$:
+
+$$
+\vec v = v_x e_x + v_y e_y + v_z e_z = \begin{pmatrix} v_x \\ v_y \\ v_z\end{pmatrix}.
+$$
+
+**Dot product.** Multiply matching entries and add them. It measures how much two vectors point the same way:
+
+$$
+\vec a\cdot\vec b = a_xb_x + a_yb_y + a_zb_z.
+$$
+
+**Norm** (length). $\|\vec v\| = \sqrt{\vec v\cdot\vec v} = \sqrt{v_x^2+v_y^2+v_z^2}$. Dividing by it gives a **unit vector** (length 1) in the same direction: $\hat v = \vec v/\|\vec v\|$.
+
+### Kets and bras: the quantum notation
+
+<Callout type="notation" title="Dirac (bra-ket) notation">
+A **ket** $\ket{v}$ ("ket v") is a **column** vector. A **bra** $\bra{v}$ ("bra v") is a **row** vector: the ket turned on its side *with every entry complex-conjugated*.
+
+$$
+\ket{v} = \begin{pmatrix} v_1 \\ v_2\end{pmatrix}, \qquad \bra{v} = \ket{v}^\dagger = \begin{pmatrix} \bar v_1 & \bar v_2\end{pmatrix}.
+$$
+
+The dagger $\dagger$ means "transpose and conjugate". The bar $\bar v$ is the complex conjugate (below). The label inside the brackets is just a name: $\ket{0}$, $\ket{\psi}$, $\ket{\text{cat}}$ are all vectors.
+</Callout>
+
+A **bra times a ket** is a row times a column, which gives **one number**: the inner product.
+
+$$
+\braket{a}{b} = \begin{pmatrix} \bar a_1 & \bar a_2\end{pmatrix}\begin{pmatrix} b_1 \\ b_2\end{pmatrix} = \bar a_1 b_1 + \bar a_2 b_2.
+$$
+
+A **ket times a bra** is a column times a row, which gives a **matrix**:
+
+$$
+\ket{a}\bra{b} = \begin{pmatrix} a_1\bar b_1 & a_1\bar b_2 \\ a_2\bar b_1 & a_2\bar b_2\end{pmatrix}.
+$$
+
+<Callout type="mistake">
+Forgetting the conjugate when making a bra. For real vectors it makes no difference, which is why the slip hides until the first $i$ appears. If $\ket{v} = \begin{pmatrix} 1 \\ i \end{pmatrix}$ then $\bra{v} = (1, -i)$, and $\braket{v}{v} = 1 + (-i)(i) = 2$, a positive length squared, as it should be. Without the conjugate you would get $1 + i^2 = 0$: a nonzero vector with zero length, which is nonsense.
+</Callout>
+
+## Matrices
+
+A matrix is a grid of numbers. $A_{ij}$ is the entry in **row $i$, column $j$**. An $m\times n$ matrix has $m$ rows and $n$ columns; a vector is an $n\times 1$ matrix.
+
+- **Adding**: only same-size matrices, entry by entry.
+- **Scalar times matrix**: multiply every entry.
+- **Trace** of a square matrix: add the diagonal. $\mathrm{Tr}\begin{pmatrix}1&2\\3&4\end{pmatrix} = 1+4 = 5$.
+- **Multiplying**: $AB$ is allowed only if (columns of $A$) = (rows of $B$). Entry $(i,j)$ is "row $i$ of $A$ dotted with column $j$ of $B$":
+
+$$
+(AB)_{ij} = \sum_k A_{ik}B_{kj}.
+$$
+
+An $m\times n$ times an $n\times p$ gives an $m\times p$.
+
+### Order matters
+
+Addition commutes ($A + B = B + A$), multiplication usually does **not**. With the matrices you will meet again in Lecture 4:
+
+$$
+XZ = \begin{pmatrix}0&1\\1&0\end{pmatrix}\begin{pmatrix}1&0\\0&-1\end{pmatrix} = \begin{pmatrix}0&-1\\1&0\end{pmatrix},\qquad ZX = \begin{pmatrix}0&1\\-1&0\end{pmatrix}.
+$$
+
+So $XZ = -ZX$. In quantum mechanics this non-commuting is *physics*: it is the uncertainty principle from Lecture 1.
+
+### Eigenvectors and eigenvalues
+
+If a matrix only **stretches** a vector (no change of direction), that vector is an **eigenvector** and the stretch factor is its **eigenvalue**:
+
+$$
+A\ket{v} = a\ket{v}.
+$$
+
+<Callout type="idea" title="Why eigen-things matter so much">
+In quantum mechanics, an observable (something you can measure) is a matrix. Its **eigenvalues are the possible measurement results**, and its **eigenvectors are the states that have a definite value** of that quantity. A state that is not an eigenvector has no definite value until measured.
+</Callout>
+
+<LockIn ids={['l2-ket', 'l2-braket', 'l2-matmul', 'l2-commute', 'l2-eig']} />
+
+## Complex numbers
+
+Number systems grew to solve equations: $x + 5 = 2$ needs negatives; $3x = 2$ needs fractions; $x^2 = 2$ needs irrationals like $\sqrt2$. And $x^2 = -1$ needs something new: the **imaginary unit** $i$, defined by
+
+$$
+i^2 = -1.
+$$
+
+A **complex number** is $z = a + bi$ with $a, b$ real. The **fundamental theorem of algebra** says every degree-$n$ polynomial has exactly $n$ complex roots (counted with multiplicity), so complex numbers are "enough" for all of algebra.
+
+<Callout type="notation" title="The parts of z = a + bi">
+- Real part: $\mathrm{Re}(z) = a$. Imaginary part: $\mathrm{Im}(z) = b$ (note: $b$, a *real* number, not $bi$).
+- Complex conjugate: $\bar z = a - bi$ (also written $z^*$). Flip the sign of the imaginary part only.
+- Modulus (size): $|z| = \sqrt{a^2 + b^2}$.
+</Callout>
+
+**Multiplying**: expand like brackets and use $i^2=-1$:
+
+$$
+(a+bi)(c+di) = ac + adi + bci + bd\,i^2 = (ac - bd) + (ad + bc)i.
+$$
+
+**A number times its conjugate** is always real and equals the size squared:
+
+$$
+z\bar z = (a+bi)(a-bi) = a^2 + b^2 = |z|^2.
+$$
+
+**Dividing**: multiply top and bottom by the conjugate of the bottom, which makes the bottom real:
+
+$$
+\frac{w}{z} = \frac{w\,\bar z}{z\,\bar z} = \frac{w\,\bar z}{|z|^2}.
+$$
+
+<Callout type="mistake">
+Two classics. First, $|z| = \sqrt{a^2+b^2}$: **don't drop the square root** (that gives $|z|^2$). Second, substituting a negative: if $b = -0.8$ then $a - b = a - (-0.8) = a + 0.8$. Always put negative numbers in brackets when you substitute.
+</Callout>
+
+## Polar form, Euler's formula and phase
+
+Plot $z = a + bi$ as the point $(a, b)$: real part across, imaginary part up. Then $z$ is an arrow with **length** $r = |z|$ and **angle** $\theta$ from the positive real axis (the **argument** or **phase**). Trigonometry gives $a = r\cos\theta$, $b = r\sin\theta$.
+
+**Euler's formula** packs this together:
+
+$$
+e^{i\theta} = \cos\theta + i\sin\theta \quad\Longrightarrow\quad z = r e^{i\theta}.
+$$
+
+<ComplexPlane />
+
+Polar form makes multiplication easy: **lengths multiply, angles add**:
+
+$$
+r_1e^{i\theta_1}\cdot r_2e^{i\theta_2} = r_1r_2\,e^{i(\theta_1+\theta_2)}, \qquad z^n = r^n e^{in\theta}.
+$$
+
+So multiplying by $e^{i\theta}$ (length 1) just **rotates** an arrow. Keep this picture: in Lecture 3 a phase factor $e^{i\theta}$ will rotate an amplitude without changing any probability.
+
+<Callout type="mistake" title="Finding the angle">
+$\theta = \tan^{-1}(b/a)$ only gives the right answer when $a > 0$. Calculators return angles between $-90°$ and $90°$, so for points on the left half of the plane add $180°$. Example: $z = -1 + i$ has $\tan^{-1}(1/(-1)) = -45°$, but the arrow points up-left, so $\theta = 135°$. Also check your calculator is in the mode (degrees or radians) you want, and that you used $\tan^{-1}$, not $\tan$.
+</Callout>
+
+Useful values: $e^{i0} = 1$, $e^{i\pi/2} = i$, $e^{i\pi} = -1$ (Euler's identity, $e^{i\pi}+1=0$), $e^{i3\pi/2} = -i$, $e^{i\pi/4} = \tfrac{1}{\sqrt2}(1+i)$.
+
+<LockIn ids={['l2-mod', 'l2-conj', 'l2-euler']} />
+
+## Worked exercises
+
+<Exercise title="2.1 · Bra-ket with complex entries" from="Lecture 2 style">
+Let $\ket{a} = \begin{pmatrix} 1 \\ i\end{pmatrix}$ and $\ket{b} = \begin{pmatrix} 2 \\ 3i\end{pmatrix}$. Find $\braket{a}{b}$, $\braket{b}{a}$ and $\|\ket b\|$.
+<Steps>
+1. Make the bra by transposing and conjugating: $\bra{a} = (1,\ -i)$.
+2. $\braket{a}{b} = 1\cdot 2 + (-i)(3i) = 2 - 3i^2 = 2 + 3 = 5$.
+3. $\bra{b} = (2,\ -3i)$, so $\braket{b}{a} = 2\cdot1 + (-3i)(i) = 2 + 3 = 5$. (In general $\braket{b}{a} = \overline{\braket{a}{b}}$; here the result happens to be real.)
+4. $\braket{b}{b} = 2\cdot 2 + (-3i)(3i) = 4 + 9 = 13$, so $\|\ket b\| = \sqrt{13}$.
+</Steps>
+<Answer>$\braket{a}{b} = \braket{b}{a} = 5$, $\|\ket b\| = \sqrt{13} \approx 3.61$.</Answer>
+</Exercise>
+
+<Exercise title="2.2 · Ket times bra" from="Lecture 2 slide: bras and kets">
+Compute $\ket{0}\bra{1}$ and $\ket{1}\bra{1}$, where $\ket0 = \begin{pmatrix}1\\0\end{pmatrix}$, $\ket1 = \begin{pmatrix}0\\1\end{pmatrix}$.
+<Steps>
+1. Column times row gives a $2\times2$ matrix whose entry $(i,j)$ is (entry $i$ of the ket) × (entry $j$ of the bra).
+2. $\ket0\bra1 = \begin{pmatrix}1\\0\end{pmatrix}\begin{pmatrix}0&1\end{pmatrix} = \begin{pmatrix}0&1\\0&0\end{pmatrix}$.
+3. $\ket1\bra1 = \begin{pmatrix}0\\1\end{pmatrix}\begin{pmatrix}0&1\end{pmatrix} = \begin{pmatrix}0&0\\0&1\end{pmatrix}$.
+</Steps>
+<Answer>$\ket0\bra1 = \begin{pmatrix}0&1\\0&0\end{pmatrix}$ and $\ket1\bra1 = \begin{pmatrix}0&0\\0&1\end{pmatrix}$. You can build any $2\times2$ matrix from four such pieces, e.g. $X = \ket0\bra1 + \ket1\bra0$.</Answer>
+</Exercise>
+
+<Exercise title="2.3 · Matrix product, both orders" from="Lecture 2: commutativity">
+With $A = \begin{pmatrix}1&2\\0&1\end{pmatrix}$ and $B = \begin{pmatrix}0&1\\1&0\end{pmatrix}$, compute $AB$ and $BA$.
+<Steps>
+1. $(AB)_{11} = $ row 1 of $A$ · column 1 of $B$ $= 1\cdot0 + 2\cdot1 = 2$; $(AB)_{12} = 1\cdot1 + 2\cdot0 = 1$.
+2. $(AB)_{21} = 0\cdot0 + 1\cdot1 = 1$; $(AB)_{22} = 0\cdot1 + 1\cdot0 = 0$. So $AB = \begin{pmatrix}2&1\\1&0\end{pmatrix}$.
+3. $(BA)$: row 1 of $B$ is $(0,1)$, giving $(0\cdot1+1\cdot0,\ 0\cdot2+1\cdot1) = (0, 1)$; row 2 is $(1,0)$, giving $(1, 2)$.
+4. So $BA = \begin{pmatrix}0&1\\1&2\end{pmatrix} \ne AB$.
+</Steps>
+<Answer>$AB = \begin{pmatrix}2&1\\1&0\end{pmatrix}$, $BA = \begin{pmatrix}0&1\\1&2\end{pmatrix}$: different, so they do not commute.</Answer>
+</Exercise>
+
+<Exercise title="2.4 · Complex arithmetic" from="Lecture 2: complex definitions">
+For $w = 3 + 4i$ and $z = 1 - 2i$ find $wz$, $\bar w$, $|w|$ and $w/z$.
+<Steps>
+1. $wz = (3+4i)(1-2i) = 3 - 6i + 4i - 8i^2 = 3 - 2i + 8 = 11 - 2i$.
+2. $\bar w = 3 - 4i$ and $|w| = \sqrt{3^2 + 4^2} = \sqrt{25} = 5$.
+3. For $w/z$, multiply top and bottom by $\bar z = 1 + 2i$. Bottom: $z\bar z = 1^2 + 2^2 = 5$.
+4. Top: $(3+4i)(1+2i) = 3 + 6i + 4i + 8i^2 = -5 + 10i$.
+5. So $w/z = (-5 + 10i)/5 = -1 + 2i$. Check: $(-1+2i)(1-2i) = -1 + 2i + 2i - 4i^2 = 3 + 4i$ ✓.
+</Steps>
+<Answer>$wz = 11 - 2i$, $\bar w = 3 - 4i$, $|w| = 5$, $w/z = -1 + 2i$.</Answer>
+</Exercise>
+
+<Exercise title="2.5 · Polar form and powers" from="Lecture 2: polar coordinates">
+Write $z = 1 + i$ in polar form and use it to find $z^8$.
+<Steps>
+1. $r = |z| = \sqrt{1^2+1^2} = \sqrt2$.
+2. The point $(1,1)$ is in the first quadrant, so $\theta = \tan^{-1}(1/1) = \pi/4$ (45°).
+3. So $z = \sqrt2\,e^{i\pi/4}$.
+4. $z^8 = (\sqrt2)^8 e^{i\cdot 8\pi/4} = 16\,e^{2\pi i}$.
+5. $e^{2\pi i} = \cos 2\pi + i\sin2\pi = 1$, so $z^8 = 16$.
+</Steps>
+<Answer>$z = \sqrt2 e^{i\pi/4}$ and $z^8 = 16$. Expanding $(1+i)^8$ by hand would take far longer.</Answer>
+</Exercise>
+
+<Exercise title="2.6 · Eigenvectors of Z" from="Lecture 2: eigenvalues">
+Show that $\ket0$ and $\ket1$ are eigenvectors of $Z = \begin{pmatrix}1&0\\0&-1\end{pmatrix}$ and find the eigenvalues. Is $\tfrac{1}{\sqrt2}\begin{pmatrix}1\\1\end{pmatrix}$ an eigenvector?
+<Steps>
+1. $Z\ket0 = \begin{pmatrix}1&0\\0&-1\end{pmatrix}\begin{pmatrix}1\\0\end{pmatrix} = \begin{pmatrix}1\\0\end{pmatrix} = (+1)\ket0$: eigenvalue $+1$.
+2. $Z\ket1 = \begin{pmatrix}0\\-1\end{pmatrix} = (-1)\ket1$: eigenvalue $-1$.
+3. $Z\tfrac1{\sqrt2}\begin{pmatrix}1\\1\end{pmatrix} = \tfrac1{\sqrt2}\begin{pmatrix}1\\-1\end{pmatrix}$, which is not a multiple of $\begin{pmatrix}1\\1\end{pmatrix}$.
+</Steps>
+<Answer>Eigenvalues $+1$ (for $\ket0$) and $-1$ (for $\ket1$). The vector $(1,1)/\sqrt2$ is **not** an eigenvector, so in the language above it has no definite "Z value".</Answer>
+</Exercise>
+
+<Check
+  q="What is $|2 - i|$?"
+  options={["$\\sqrt3$", "$\\sqrt5$", "$5$", "$1$"]}
+  answer={1}
+  tag="sqrt"
+  explain={"$|a+bi| = \\sqrt{a^2+b^2} = \\sqrt{4 + 1} = \\sqrt5$. The sign of $b$ does not matter because it is squared, and 5 would be $|z|^2$."}
+/>
+
+<Deeper title="Hilbert spaces, adjoints and spectral theorem" level="MSc">
+The space of qubit states is $\mathbb{C}^2$ with the inner product $\braket{a}{b}$: a (finite-dimensional) **Hilbert space**. The adjoint $A^\dagger$ is defined by $\braket{a}{Ab} = \braket{A^\dagger a}{b}$ for all vectors, which for matrices is the conjugate transpose. The **spectral theorem** says every normal matrix ($AA^\dagger = A^\dagger A$), including every Hermitian and every unitary matrix, can be written $A = \sum_k \lambda_k \ket{k}\bra{k}$ with orthonormal eigenvectors $\ket{k}$. That one fact underlies measurement (Lecture 3) and gates (Lecture 4). Read: Nielsen & Chuang §2.1; Axler, *Linear Algebra Done Right*, ch. 6–7.
+</Deeper>
+
+<Deeper title="Why complex numbers, not just real?" level="PhD">
+Could quantum theory work with real amplitudes only? For single systems you can always fake it with more dimensions, but in 2021 Renou et al. (Nature 600, 625) showed that real-number quantum theory makes different predictions in a network Bell-type experiment, and experiments since agree with the complex version. Complex numbers are not just a convenience.
+</Deeper>

@@ -1,0 +1,65 @@
+---
+import Base from '../layouts/Base.astro';
+const groups = [
+  { title: 'Build and see circuits', items: [
+    ['Code lab (this site)', '/code-lab', 'Qiskit / OpenQASM with tests and a tutor that spots common mistakes.'],
+    ['Quirk', 'https://algassert.com/quirk', 'Drag-and-drop circuit simulator by Craig Gidney. Live Bloch spheres and amplitudes for up to 16 qubits; brilliant for checking homework circuits.'],
+    ['IBM Quantum Composer', 'https://quantum.cloud.ibm.com/composer', 'Drag-and-drop circuits that also run on real IBM hardware; shows the matching OpenQASM as you build.'],
+  ] },
+  { title: 'See the physics', items: [
+    ['Quantum Flytrap Virtual Lab', 'https://lab.quantumflytrap.com', 'A drag-and-drop optical table: beam splitters, polarisers and detectors, with up to three entangled photons. Build Lecture 3\'s polarisation experiments, a Bell test or teleportation with "real" optics.'],
+    ['PhET: Quantum Measurement', 'https://phet.colorado.edu/en/simulations/quantum-measurement', 'Spin measurements, Stern–Gerlach style, from the University of Colorado\'s research-tested simulations.'],
+    ['PhET: Photoelectric Effect', 'https://phet.colorado.edu/en/simulations/photoelectric', 'Lecture 1\'s experiment: change colour and brightness and watch which one matters.'],
+    ['PhET: Quantum Wave Interference', 'https://phet.colorado.edu/en/simulations/quantum-wave-interference', 'The double slit, one particle at a time.'],
+    ['Mach–Zehnder interferometer (this site)', '/ideas#physics', 'H, phase, H built from mirrors: see interference switch on and off.'],
+  ] },
+  { title: 'Write real quantum programs', items: [
+    ['Qiskit documentation', 'https://quantum.cloud.ibm.com/docs', 'IBM\'s Python SDK: guides, tutorials and API reference. What the code lab\'s Python mode imitates.'],
+    ['OpenQASM', 'https://openqasm.com', 'The specification of the circuit language used by IBM and others (version 3).'],
+    ['Quantum Computing Stack Exchange', 'https://quantumcomputing.stackexchange.com', 'Q&A site for quantum computing and quantum information. Search before asking: most beginner questions already have excellent answers.'],
+    ['Microsoft Quantum Katas', 'https://learn.microsoft.com/en-us/azure/quantum/katas-qdk-learning', 'Self-paced exercises with unit tests, in Q# (in VS Code). Good once Qiskit feels comfortable.'],
+  ] },
+  { title: 'Run on real quantum computers', items: [
+    ['IBM Quantum Platform', 'https://quantum.cloud.ibm.com/', 'Free account (Open Plan) with a monthly allowance of real-hardware time. The code lab explains the code to submit a job.'],
+  ] },
+  { title: 'Maths help', items: [
+    ['Academic Skills Kit', 'https://www.ncl.ac.uk/academic-skills-kit/', 'Newcastle\'s maths support: complex numbers, vectors, matrices (recommended in Lecture 2).'],
+    ['WolframAlpha', 'https://www.wolframalpha.com', 'Check complex arithmetic and matrix products, e.g. type "{{0,1},{1,0}}.{{1,0},{0,-1}}". Use it to check, not to do, the working.'],
+    ['3Blue1Brown: Essence of Linear Algebra', 'https://www.3blue1brown.com/topics/linear-algebra', 'Visual intuition for vectors, matrices, eigenvectors.'],
+  ] },
+  { title: 'Remembering it', items: [
+    ['Flashcards (this site)', '/flashcards', 'Every lecture\'s key facts, scheduled with FSRS.'],
+    ['Anki', 'https://apps.ankiweb.net', 'If you want your own cards on your phone. Turn on the FSRS scheduler in the deck options.'],
+    ['Quantum Country', 'https://quantum.country', 'An essay with built-in spaced repetition: read it as revision for Lectures 2–4 and 9.'],
+  ] },
+];
+---
+<Base title="Tools">
+  <div class="eyebrow">Toolkit</div>
+  <h1>Tools you'll actually use</h1>
+  <p class="muted" style="max-width:760px">A short, curated list rather than everything that exists. All free.</p>
+  {groups.map((g) => (
+    <section>
+      <h2>{g.title}</h2>
+      <div class="grid grid-3">
+        {g.items.map(([name, url, why]) => (
+          <a class="card" href={url} rel={url.startsWith('http') ? 'noopener' : undefined} target={url.startsWith('http') ? '_blank' : undefined} style="text-decoration:none;color:var(--text);display:flex;flex-direction:column;gap:.3rem">
+            <strong>{name} {url.startsWith('http') && <span class="small muted">↗</span>}</strong>
+            <span class="small muted">{why}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  ))}
+  <section>
+    <h2>How to study this module (the short version)</h2>
+    <ol style="max-width:760px">
+      <li><strong>Little and often.</strong> 30–40 minutes most days beats one long session: the spacing is what makes it stick.</li>
+      <li><strong>Test, don't reread.</strong> Flashcards, check questions and quizzes are where the learning happens.</li>
+      <li><strong>Predict before you look.</strong> Guess, then check. Wrong guesses still help.</li>
+      <li><strong>Mix topics</strong> once each feels familiar, so you practise choosing the method.</li>
+      <li><strong>Explain it back</strong> in your own words; gaps show up immediately.</li>
+      <li><strong>Write exam answers by hand</strong> in Exam mode: the exam is closed-book and handwritten.</li>
+    </ol>
+  </section>
+</Base>

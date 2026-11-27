@@ -1,0 +1,207 @@
+---
+number: 9
+title: Quantum teleportation
+lecturer: Dr Ittoop Puthoor
+blurb: Moving an unknown qubit from Alice to Bob using one shared entangled pair and two ordinary bits. The circuit, the full derivation, Bob's four corrections, and why it neither clones nor beats light.
+minutes: 70
+prereqs: [5, 6, 7]
+objectives:
+  - Draw the teleportation circuit and say what each part is for
+  - Derive the 3-qubit state after each step, ending in the four-term grouping
+  - Give Bob's correction for each of Alice's results (00, 01, 10, 11)
+  - Explain why teleportation respects no-cloning and no-signalling
+  - Describe applications (networks, error correction, chips)
+sheet:
+  - title: The protocol
+    points:
+      - "Share $\\ket{\\Phi^+}_{12}$ (H on q1, CNOT q1→q2). Alice has q0 = $\\ket\\psi$ and q1; Bob has q2"
+      - "Alice: CNOT(q0→q1), H(q0), measure q0 → $m_1$, q1 → $m_2$"
+      - "She sends $m_1m_2$ (2 classical bits); Bob applies $X^{m_2}$ then $Z^{m_1}$"
+  - title: The key identity
+    points:
+      - "Before Alice measures: $\\tfrac12\\big[\\ket{00}(\\A\\alpha\\ket0+\\B\\beta\\ket1) + \\ket{01}(\\A\\alpha\\ket1+\\B\\beta\\ket0)$"
+      - "$\\quad + \\ket{10}(\\A\\alpha\\ket0-\\B\\beta\\ket1) + \\ket{11}(\\A\\alpha\\ket1-\\B\\beta\\ket0)\\big]$"
+      - "Each outcome has probability 1/4"
+  - title: Corrections
+    points:
+      - "00 → I · 01 → X · 10 → Z · 11 → X then Z ($ZX$)"
+  - title: Why it's allowed
+    points:
+      - "Alice's measurement destroys her copy (no cloning)"
+      - "Without the 2 bits, Bob's qubit is $I/2$: no information (no signalling)"
+      - "1 ebit + 2 cbits ≥ 1 qubit"
+---
+import Callout from '../../components/Callout.astro';
+import Check from '../../components/Check.astro';
+import LockIn from '../../components/LockIn.astro';
+import Deeper from '../../components/Deeper.astro';
+import Exercise from '../../components/Exercise.astro';
+import Steps from '../../components/Steps.astro';
+import Answer from '../../components/Answer.astro';
+import TeleportLab from '../../components/TeleportLab.astro';
+
+## The idea in 60 seconds
+
+Alice has a qubit in some state $\ket\psi = \A\alpha\ket0 + \B\beta\ket1$ that **she doesn't know**. She wants Bob, far away, to end up with that exact state. She can't measure it to find α and β (one measurement gives one random bit and destroys the rest), and she can't copy it (Lecture 7). She can't even send the qubit itself if there is no quantum channel.
+
+**Teleportation** solves this with:
+
+1. one **pre-shared entangled pair** (Alice holds one half, Bob the other), and
+2. **two classical bits** sent from Alice to Bob (a phone call).
+
+At the end Bob holds $\ket\psi$ and Alice's copy is gone. Nothing material travels, and nothing goes faster than light.
+
+<Callout type="notation" title="Labels used on this page">
+Three qubits, always written in the order $\ket{q_0\,q_1\,q_2}$:
+- $q_0$: Alice's unknown $\ket\psi$;
+- $q_1$: Alice's half of the shared pair;
+- $q_2$: Bob's half.
+
+$m_1$ is Alice's result from measuring $q_0$, $m_2$ from $q_1$. Colours as always: $\A\alpha$ purple, $\B\beta$ teal.
+</Callout>
+
+## The circuit
+
+Three parts, left to right:
+
+1. **Create the shared pair** on $q_1, q_2$: H on $q_1$, then CNOT ($q_1\to q_2$). This makes $\ket{\Phi^+}$ (Lecture 6). It can happen days before Alice even has $\ket\psi$.
+2. **Alice's operations**: CNOT ($q_0\to q_1$), then H on $q_0$, then measure both her qubits.
+3. **Bob's operations**: depending on the two bits he receives, apply X and/or Z to $q_2$.
+
+In the lecture's "programming notation": initialise; create entanglement; Alice's unitaries; measure; *if* $m_2 = 1$ *then* apply X; *if* $m_1 = 1$ *then* apply Z.
+
+<Check
+  mode="predict"
+  q="Right after Alice's CNOT and H, **before** she measures, does Bob's qubit already contain α and β in some form?"
+  options={["No, nothing reaches Bob until the classical bits arrive", "Yes, in every branch Bob's qubit is α and β, up to an X and/or Z", "Yes, Bob already has exactly $\\ket\\psi$", "Only if Alice is lucky"]}
+  answer={1}
+  explain="The whole trick is an algebraic identity: after Alice's gates, the 3-qubit state can be regrouped so that for each of her 4 possible results, Bob's qubit is $\ket\psi$ with a known Pauli applied. But on his own Bob can't tell which branch he is in, so he can't use it yet. Work through the steps below to see it."
+/>
+
+## Working it through
+
+<TeleportLab />
+
+### Step 1: the starting state and the shared pair
+
+Start: $\ket{\psi}\ket0\ket0$. After H on $q_1$ and CNOT($q_1\to q_2$), the last two qubits are $\ket{\Phi^+} = \tfrac1{\sqrt2}(\ket{00}+\ket{11})$:
+
+$$
+\ket{\psi_1} = (\A\alpha\ket0 + \B\beta\ket1)\otimes\tfrac1{\sqrt2}(\ket{00} + \ket{11}) = \tfrac{1}{\sqrt2}\big[\A\alpha\ket{000} + \A\alpha\ket{011} + \B\beta\ket{100} + \B\beta\ket{111}\big].
+$$
+
+### Step 2: Alice's CNOT (q₀ → q₁)
+
+Flip $q_1$ in every term where $q_0 = 1$ (the β terms):
+
+$$
+\ket{\psi_2} = \tfrac{1}{\sqrt2}\big[\A\alpha\ket{000} + \A\alpha\ket{011} + \B\beta\ket{110} + \B\beta\ket{101}\big].
+$$
+
+### Step 3: Alice's H on q₀
+
+Replace $\ket0\to\tfrac1{\sqrt2}(\ket0+\ket1)$ and $\ket1\to\tfrac1{\sqrt2}(\ket0 - \ket1)$ on the first qubit:
+
+$$
+\ket{\psi_3} = \tfrac12\big[\A\alpha(\ket0+\ket1)(\ket{00}+\ket{11}) + \B\beta(\ket0-\ket1)(\ket{10}+\ket{01})\big].
+$$
+
+Expand into eight terms and **group by Alice's two qubits** $q_0q_1$:
+
+$$
+\ket{\psi_3} = \tfrac12\Big[\ket{00}(\A\alpha\ket0 + \B\beta\ket1) + \ket{01}(\A\alpha\ket1 + \B\beta\ket0) + \ket{10}(\A\alpha\ket0 - \B\beta\ket1) + \ket{11}(\A\alpha\ket1 - \B\beta\ket0)\Big].
+$$
+
+This is the heart of the protocol: the lecture's "first, second, third and fourth terms". Nothing has been measured, yet in each term Bob's qubit (the bracket) is $\ket\psi$ with at most an X and/or a Z applied.
+
+### Step 4: Alice measures; Bob corrects
+
+Each of Alice's four results has probability $(\tfrac12)^2 \times (|\alpha|^2 + |\beta|^2) = \tfrac14$, **whatever** $\ket\psi$ is, so her results reveal nothing about α or β.
+
+| Alice gets $m_1m_2$ | Bob's qubit is | Bob applies | Result |
+|---|---|---|---|
+| 00 | $\A\alpha\ket0 + \B\beta\ket1$ | nothing | $\ket\psi$ |
+| 01 | $\A\alpha\ket1 + \B\beta\ket0$ | X (swaps 0 and 1) | $\ket\psi$ |
+| 10 | $\A\alpha\ket0 - \B\beta\ket1$ | Z (fixes the sign) | $\ket\psi$ |
+| 11 | $\A\alpha\ket1 - \B\beta\ket0$ | X, then Z | $\ket\psi$ |
+
+Check the last row: $X(\alpha\ket1 - \beta\ket0) = \alpha\ket0 - \beta\ket1$, then $Z$ gives $\alpha\ket0 + \beta\ket1$ ✓.
+
+<Callout type="mistake" title="Getting the corrections the wrong way round">
+Memory hook: the **second** bit $m_2$ came from the qubit that went through the CNOT, so it controls the bit-flip **X**. The **first** bit $m_1$ came from the qubit that went through H, so it controls the phase-flip **Z**. Bob applies $Z^{m_1}X^{m_2}$: X first, then Z. (For 11 the other order, $XZ$, gives $-\ket\psi$: only a global phase, so also fine, but stick to the convention in exams.)
+</Callout>
+
+<LockIn ids={['l9-what', 'l9-alice', 'l9-fix', 'l9-prob']} />
+
+## Why it doesn't break the rules
+
+**No cloning.** Alice's measurement turns her $q_0$ and $q_1$ into plain classical bits; the information about α, β is gone from her side. At the end exactly one copy of $\ket\psi$ exists: Bob's.
+
+**No faster-than-light signalling.** Until the two bits arrive, Bob doesn't know which of the four rows he is in. Averaging over the four equally likely rows, his qubit is in the maximally mixed state $\tfrac12 I$: measuring it gives 50/50 whatever ψ is. The bits travel at most at light speed, so the state effectively arrives no faster than that.
+
+**Resource count.** 1 shared entangled pair + 2 classical bits = 1 qubit transferred. (Superdense coding is the mirror image: 1 entangled pair + 1 qubit sent = 2 classical bits.)
+
+## Applications
+
+- **Quantum networks and repeaters**: teleporting through chains of entangled links, extended by entanglement swapping (below).
+- **Quantum error correction and fault-tolerant gates**: teleporting through a prepared resource state applies a gate along the way.
+- **Quantum chips**: moving qubit states between distant parts of a processor or between modules.
+
+Dr Puthoor's own PhD research (Puthoor et al. 2012) modelled teleportation in CQP (Communicating Quantum Processes), a process calculus for checking that quantum protocols behave as intended.
+
+<LockIn ids={['l9-ftl', 'l9-clone']} />
+
+## Worked exercises
+
+<Exercise title="9.1 · Teleport a specific state" from="Problem set style">
+Alice's input is $\ket\psi = 0.8\ket0 + 0.6\ket1$. Write Bob's qubit for each result, and confirm the corrections.
+<Steps>
+1. Use the grouped state with $\alpha = 0.8$, $\beta = 0.6$.
+2. 00: $0.8\ket0 + 0.6\ket1$, already $\ket\psi$.
+3. 01: $0.8\ket1 + 0.6\ket0 = 0.6\ket0 + 0.8\ket1$. Apply X: $0.6\ket1 + 0.8\ket0$ ✓.
+4. 10: $0.8\ket0 - 0.6\ket1$. Apply Z: $0.8\ket0 + 0.6\ket1$ ✓.
+5. 11: $0.8\ket1 - 0.6\ket0$. X gives $0.8\ket0 - 0.6\ket1$; Z gives $0.8\ket0 + 0.6\ket1$ ✓.
+</Steps>
+<Answer>Bob holds 0.80|0⟩+0.60|1⟩, 0.80|1⟩+0.60|0⟩, 0.80|0⟩−0.60|1⟩, 0.80|1⟩−0.60|0⟩ for 00, 01, 10, 11 (25% each), and the corrections I, X, Z, ZX all restore $\ket\psi$.</Answer>
+</Exercise>
+
+<Exercise title="9.2 · The expansion in full" from="Lecture 9: Alice's unitary operations">
+Expand step 3 into its eight terms and regroup. Show the $\ket{10}$ term.
+<Steps>
+1. $\A\alpha$ part: $\tfrac12\alpha(\ket0+\ket1)(\ket{00}+\ket{11}) = \tfrac12\alpha(\ket{000}+\ket{011}+\ket{100}+\ket{111})$.
+2. $\B\beta$ part: $\tfrac12\beta(\ket0-\ket1)(\ket{10}+\ket{01}) = \tfrac12\beta(\ket{010}+\ket{001}-\ket{110}-\ket{101})$.
+3. Pick out the terms whose first two labels are 1, 0: from the α part $\ket{100}$, from the β part $-\ket{101}$.
+4. So the $\ket{10}$ group is $\tfrac12\ket{10}(\alpha\ket0 - \beta\ket1)$.
+</Steps>
+<Answer>$\tfrac12\ket{10}\otimes(\alpha\ket0 - \beta\ket1)$. Do the same for 00, 01 and 11 to get the full grouped state.</Answer>
+</Exercise>
+
+<Exercise title="9.3 · A different shared pair" from="Extension">
+Suppose the shared pair is $\ket{\Psi^+} = \tfrac1{\sqrt2}(\ket{01}+\ket{10})$ instead of $\ket{\Phi^+}$. What should Bob do if Alice gets 00?
+<Steps>
+1. $\ket{\Psi^+} = (I\otimes X)\ket{\Phi^+}$: it is $\ket{\Phi^+}$ with an extra X on Bob's qubit.
+2. X on Bob's qubit commutes with everything Alice does (different qubits), so it simply stays there to the end.
+3. With result 00 the usual protocol would leave Bob with $\ket\psi$; now he has $X\ket\psi = \beta\ket0 + \alpha\ket1$.
+</Steps>
+<Answer>Apply X. In general, with $\ket{\Psi^+}$ Bob's correction is the usual one followed by an extra X (up to a global phase).</Answer>
+</Exercise>
+
+<Check
+  q="Alice measures $m_1m_2 = 10$. Which gate does Bob apply?"
+  options={["X", "Z", "X then Z", "Nothing"]}
+  answer={1}
+  tag="correction"
+  explain="$m_1 = 1$ means Z; $m_2 = 0$ means no X. Bob holds $\alpha\ket0 - \beta\ket1$, and Z restores the sign."
+/>
+
+<Deeper title="Density matrix view: Bob's qubit is I/2" level="MSc">
+Trace out Alice's two qubits from $\ket{\psi_3}$ before she measures: $\rho_B = \tfrac14\sum_{P\in\{I, X, Z, XZ\}} P\ket\psi\bra\psi P^\dagger = \tfrac12 I$, because averaging over the four Paulis "twirls" any state to the maximally mixed state. That is the precise statement that Bob learns nothing without the classical bits, and it's the no-signalling theorem in action.
+</Deeper>
+
+<Deeper title="Entanglement swapping" level="PhD">
+Teleport one half of an entangled pair: if Alice holds $q_1$ entangled with Charlie's $q_0$, and teleports $q_1$ to Bob, then Charlie and Bob end up entangled although their qubits never met. This is the basis of quantum repeaters and was used in the 2015 Delft loophole-free Bell test. Žukowski et al., PRL 71, 4287 (1993); Pan et al. demonstrated it in 1998.
+</Deeper>
+
+<Deeper title="Gate teleportation and measurement-based computing" level="PhD">
+To apply a hard gate $U$, teleport the qubit through $(I\otimes U)\ket{\Phi^+}$. The corrections become $UPU^\dagger$, which are easy when $U$ is Clifford+T (Gottesman & Chuang, Nature 402, 390, 1999). Push this idea far enough and you get **measurement-based quantum computing**: prepare a big entangled "cluster state", then compute by single-qubit measurements alone (Raussendorf & Briegel 2001).
+</Deeper>

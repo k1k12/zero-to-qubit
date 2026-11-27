@@ -1,0 +1,61 @@
+---
+// Probability only appears over many runs: watch measurement results pile up.
+---
+<div class="lab shots">
+  <div class="eyebrow">Visual · probability emerges from single random clicks</div>
+  <p class="notice">One measurement gives one random result, never a probability. Press <strong>Play</strong> and watch results land one at a time: the bars wobble a lot at first, then settle on |α|² and |β|². This is why real quantum computers run every circuit thousands of times ("shots").</p>
+  <div class="lab-grid">
+    <div>
+      <label class="small">P(1) = |β|²: <span class="v"></span><input type="range" class="p" min="0" max="100" value="30" /></label>
+      <div class="btn-row">
+        <button class="btn small play" type="button">▶ Play</button>
+        <button class="btn small secondary" type="button" data-add="1">+1 shot</button>
+        <button class="btn small secondary" type="button" data-add="1000">+1,000</button>
+        <button class="btn small secondary reset" type="button">Reset</button>
+      </div>
+      <div class="dots" aria-hidden="true" style="display:flex;flex-wrap:wrap;gap:3px;max-height:140px;overflow:hidden"></div>
+    </div>
+    <div>
+      <svg class="chart" viewBox="0 0 320 180" width="100%" role="img" aria-label="Running estimate of P(1) against number of shots"></svg>
+      <div class="bars"></div>
+    </div>
+  </div>
+</div>
+<script>
+  import { bars } from '../lib/ui';
+  document.querySelectorAll<HTMLElement>('.shots').forEach((root) => {
+    const q = <T,>(s: string) => root.querySelector(s) as T;
+    const pIn = q<HTMLInputElement>('.p');
+    let ones = 0, n = 0, track: number[] = [], timer: number | undefined, recent: number[] = [];
+    const p = () => +pIn.value / 100;
+    function shot(k: number) {
+      for (let i = 0; i < k; i++) { const r = Math.random() < p() ? 1 : 0; ones += r; n++; recent.push(r); if (n <= 2000 && (n < 50 || n % 5 === 0)) track.push(ones / n); }
+      recent = recent.slice(-120);
+      draw();
+    }
+    function draw() {
+      q<HTMLElement>('.v').textContent = p().toFixed(2);
+      q<HTMLElement>('.dots').innerHTML = recent.map((r) => `<span style="width:10px;height:10px;border-radius:50%;background:${r ? 'var(--beta)' : 'var(--alpha)'}"></span>`).join('');
+      const W = 300, H = 150, x = (i: number) => 10 + (i / Math.max(1, track.length - 1)) * W, y = (v: number) => 10 + (1 - v) * H;
+      const path = track.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join('');
+      q<SVGSVGElement>('.chart').innerHTML = `<rect x="10" y="10" width="${W}" height="${H}" fill="none" stroke="var(--line)"/>
+        <line x1="10" x2="${10 + W}" y1="${y(p())}" y2="${y(p())}" stroke="var(--shaky)" stroke-dasharray="5 4"/>
+        <text x="14" y="${y(p()) - 5}" fill="var(--shaky)" font-size="11">true P(1) = ${p().toFixed(2)}</text>
+        <path d="${path}" fill="none" stroke="var(--beta)" stroke-width="2"/>
+        <text x="14" y="176" class="svg-muted" font-size="11">running estimate after ${n} shot${n === 1 ? '' : 's'}</text>`;
+      if (n) bars(q<HTMLElement>('.bars'), [{ label: `0s: ${n - ones}`, p: (n - ones) / n, colour: 'var(--alpha)' }, { label: `1s: ${ones}`, p: ones / n, colour: 'var(--beta)', note: `± ${(Math.sqrt(p() * (1 - p()) / n) * 100).toFixed(1)}% typical error` }]);
+      else q<HTMLElement>('.bars').innerHTML = '';
+    }
+    const reset = () => { ones = 0; n = 0; track = []; recent = []; draw(); };
+    q<HTMLButtonElement>('.play').addEventListener('click', (e) => {
+      const b = e.currentTarget as HTMLButtonElement;
+      if (timer) { clearInterval(timer); timer = undefined; b.textContent = '▶ Play'; return; }
+      b.textContent = '❚❚ Pause';
+      timer = window.setInterval(() => { shot(1); if (n >= 400) { clearInterval(timer); timer = undefined; b.textContent = '▶ Play'; } }, document.documentElement.dataset.reduceMotion === 'true' ? 5 : 40);
+    });
+    root.querySelectorAll<HTMLButtonElement>('[data-add]').forEach((b) => b.addEventListener('click', () => shot(+b.dataset.add!)));
+    q<HTMLButtonElement>('.reset').addEventListener('click', reset);
+    pIn.addEventListener('input', reset);
+    draw();
+  });
+</script>

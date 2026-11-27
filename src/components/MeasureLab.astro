@@ -1,0 +1,96 @@
+---
+// Lecture 3: prepare a qubit, pick a measurement, and run it many times.
+---
+<div class="lab measure-lab">
+  <div class="eyebrow">Explore · measuring a qubit</div>
+  <p class="notice">Set the amplitudes, choose what to measure, then run it. <strong>Notice:</strong> one run tells you almost nothing; the probabilities only show up over many runs. And |+⟩ and |−⟩ look identical in the 0/1 measurement but completely different in the +/− one.</p>
+  <div class="lab-grid">
+    <div>
+      <label class="small">|α| (size of the |0⟩ part): <span class="v-a"></span>
+        <input type="range" class="a" min="0" max="100" step="1" value="60" />
+      </label>
+      <div class="small">Sign / phase of β:
+        <div class="guidance phase" role="group" aria-label="Phase of beta">
+          <button type="button" data-ph="1" aria-pressed="false">+</button>
+          <button type="button" data-ph="-1" aria-pressed="true">−</button>
+          <button type="button" data-ph="i" aria-pressed="false">+i</button>
+          <button type="button" data-ph="-i" aria-pressed="false">−i</button>
+        </div>
+      </div>
+      <p class="state" style="font-size:1.2rem" aria-live="polite"></p>
+      <div class="small">Measure in the basis:
+        <div class="guidance basis" role="group" aria-label="Measurement basis">
+          <button type="button" data-b="z" aria-pressed="true">0 or 1</button>
+          <button type="button" data-b="x" aria-pressed="false">+ or −</button>
+        </div>
+      </div>
+      <div class="working small" style="margin-top:.8rem"></div>
+      <div class="btn-row">
+        <button class="btn small once" type="button">Measure once</button>
+        <button class="btn small secondary many" type="button">Measure 1,000 fresh copies</button>
+      </div>
+      <p class="result" aria-live="polite"></p>
+    </div>
+    <div>
+      <div class="eyebrow">Prediction vs what you got</div>
+      <div class="probs"></div>
+      <div class="counts small muted"></div>
+    </div>
+  </div>
+</div>
+<script>
+  import { c, mul, add, abs2, scale, type C } from '../lib/sim';
+  import { bars, amp } from '../lib/ui';
+  document.querySelectorAll<HTMLElement>('.measure-lab').forEach((root) => {
+    const q = <T,>(s: string) => root.querySelector(s) as T;
+    let ph: C = c(-1), basis = 'z';
+    let counts: number[] | null = null;
+    const aIn = q<HTMLInputElement>('.a');
+    const state = (): [C, C] => { const a = +aIn.value / 100; return [c(a), scale(ph, Math.sqrt(1 - a * a))]; };
+    function draw() {
+      counts = counts; const [a, b] = state();
+      q<HTMLElement>('.v-a').textContent = (+aIn.value / 100).toFixed(2);
+      q<HTMLElement>('.state').innerHTML = `|ψ⟩ = <span class="amp-a">${amp(a)}</span>|0⟩ + <span class="amp-b">${amp(b)}</span>|1⟩`;
+      let p0: number, l0: string, l1: string, work: string;
+      if (basis === 'z') {
+        p0 = abs2(a); l0 = '0'; l1 = '1';
+        work = `P(0) = |α|² = |${amp(a)}|² = <strong>${p0.toFixed(3)}</strong><br>P(1) = |β|² = |${amp(b)}|² = <strong>${(1 - p0).toFixed(3)}</strong>`;
+      } else {
+        p0 = abs2(add(a, b)) / 2; l0 = '+'; l1 = '−';
+        work = `P(+) = |α + β|²/2 = |${amp(a)} + ${amp(b)}|²/2 = <strong>${p0.toFixed(3)}</strong><br>P(−) = |α − β|²/2 = <strong>${(1 - p0).toFixed(3)}</strong>`;
+      }
+      q<HTMLElement>('.working').innerHTML = work;
+      const rows = [{ label: `Predicted P(${l0})`, p: p0, colour: 'var(--alpha)' }, { label: `Predicted P(${l1})`, p: 1 - p0, colour: 'var(--beta)' }];
+      if (counts) {
+        const n = counts[0] + counts[1];
+        rows.push({ label: `Observed ${l0}`, p: counts[0] / n, colour: 'color-mix(in srgb, var(--alpha) 55%, transparent)', note: `${counts[0]} of ${n}` } as any);
+        rows.push({ label: `Observed ${l1}`, p: counts[1] / n, colour: 'color-mix(in srgb, var(--beta) 55%, transparent)', note: `${counts[1]} of ${n}` } as any);
+      }
+      bars(q<HTMLElement>('.probs'), rows);
+      return { p0, l0, l1 };
+    }
+    const reset = () => { counts = null; q<HTMLElement>('.result').textContent = ''; draw(); };
+    aIn.addEventListener('input', reset);
+    root.querySelectorAll<HTMLButtonElement>('[data-ph]').forEach((b) => b.addEventListener('click', () => {
+      const v = b.dataset.ph!; ph = v === 'i' ? c(0, 1) : v === '-i' ? c(0, -1) : c(+v);
+      root.querySelectorAll('[data-ph]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); reset();
+    }));
+    root.querySelectorAll<HTMLButtonElement>('[data-b]').forEach((b) => b.addEventListener('click', () => {
+      basis = b.dataset.b!; root.querySelectorAll('[data-b]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); reset();
+    }));
+    q<HTMLButtonElement>('.once').addEventListener('click', () => {
+      const { p0, l0, l1 } = draw();
+      const r = Math.random() < p0 ? l0 : l1;
+      q<HTMLElement>('.result').innerHTML = `Result: <strong>${r}</strong>. The qubit is now exactly |${r}⟩; measuring it again the same way gives ${r} every time. To see the probabilities you need fresh copies.`;
+      void mul;
+    });
+    q<HTMLButtonElement>('.many').addEventListener('click', () => {
+      const { p0 } = draw();
+      counts = [0, 0];
+      for (let k = 0; k < 1000; k++) counts[Math.random() < p0 ? 0 : 1]++;
+      q<HTMLElement>('.result').textContent = 'Each copy gave a single random result; the counts approach the predicted probabilities.';
+      draw();
+    });
+    draw();
+  });
+</script>

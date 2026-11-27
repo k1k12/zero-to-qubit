@@ -1,0 +1,15 @@
+---
+import Base from '../layouts/Base.astro';
+const items = [
+  ['/flashcards', '🗂', 'Flashcards', 'A few minutes a day. Cards come back just before you would forget them.'],
+  ['/quiz', '✎', 'Mixed quiz', 'Exam-style questions from every lecture, mixed, with full working and an error log.'],
+  ['/mock-exam', '⏱', 'Mock exam', 'A full timed paper with a mark scheme. Do it by hand, then mark yourself.'],
+  ['/code-lab', '⌨', 'Code lab', 'Write Qiskit or OpenQASM, run it, and get feedback on common mistakes.'],
+];
+---
+<Base title="Practice">
+  <div class="eyebrow">Practice</div>
+  <h1>Practise</h1>
+  <p class="muted" style="max-width:720px">Testing yourself is where the learning happens. Flashcards keep facts fresh, the quiz trains you to choose the method, and the mock exam checks it all under time pressure.</p>
+  <div class="hub">{items.map(([h, i, t, d]) => <a class="card" href={h}><span class="ico" aria-hidden="true">{i}</span><strong>{t}</strong><span class="small muted">{d}</span></a>)}</div>
+</Base>

@@ -1,0 +1,34 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+const lectures = (await getCollection('lectures')).sort((a, b) => a.data.number - b.data.number);
+---
+<Base title="All lectures">
+  <div class="eyebrow">Learn</div>
+  <h1>All lectures, in order</h1>
+  <p class="muted" style="max-width:760px">Each lecture builds on the ones before it. The coloured label is how well <em>you</em> said you know it; change it at the top of each lecture page.</p>
+  <div class="grid grid-3" style="margin-top:1.4rem">
+    {lectures.map((l) => (
+      <a class="card lec-card" id={`l${l.data.number}`} href={`/lectures/${l.id}`} data-slug={l.id} style="text-decoration:none;color:var(--text);display:flex;flex-direction:column;gap:.4rem">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span class="eyebrow">Lecture {l.data.number}</span><span class="pill mastery">Not yet</span></div>
+        <strong style="font-size:1.08rem">{l.data.title}</strong>
+        <span class="small muted">{l.data.blurb}</span>
+        <span class="small muted" style="margin-top:auto">≈ {l.data.minutes} min · <span>One-page summary available</span></span>
+      </a>
+    ))}
+  </div>
+  <div class="card" style="margin-top:1.4rem">
+    <strong>Lecture 10: hardware implementations</strong>
+    <p class="small muted" style="margin:.3rem 0 0">On the syllabus but not covered here yet. Add the slides when they're released. Meanwhile the <a href="/library">Library</a> lists good introductions to superconducting, trapped-ion and photonic qubits.</p>
+  </div>
+</Base>
+<script>
+  import { getMastery } from '../../lib/store';
+  const m = getMastery();
+  document.querySelectorAll<HTMLElement>('.lec-card').forEach((c) => {
+    const v = m[c.dataset.slug!] ?? 'none';
+    const p = c.querySelector('.mastery')!;
+    p.textContent = v === 'solid' ? 'Solid' : v === 'shaky' ? 'Shaky' : 'Not yet';
+    p.className = `pill mastery ${v === 'solid' ? 'good' : v === 'shaky' ? 'shaky' : 'bad'}`;
+  });
+</script>

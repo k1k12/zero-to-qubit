@@ -1,0 +1,89 @@
+---
+// Lectures 5-6: build two-qubit states with gates and see whether they are entangled.
+interface Props { notice?: string }
+const { notice = 'Start from |00⟩ and try H on q0, then CNOT. Watch the "separable?" test flip to entangled. Then measure q0 and see what happens to q1.' } = Astro.props;
+---
+<div class="lab two-lab">
+  <div class="eyebrow">Explore · two qubits, tensor products and entanglement</div>
+  <p class="notice">{notice}</p>
+  <div class="lab-grid">
+    <div>
+      <div class="small muted">Gates (applied left to right in time):</div>
+      <div class="btn-row">
+        <button class="btn small" data-op="H0" type="button">H on q0</button>
+        <button class="btn small" data-op="H1" type="button">H on q1</button>
+        <button class="btn small" data-op="X0" type="button">X on q0</button>
+        <button class="btn small" data-op="X1" type="button">X on q1</button>
+        <button class="btn small" data-op="Z0" type="button">Z on q0</button>
+        <button class="btn small" data-op="CX01" type="button">CNOT q0→q1</button>
+        <button class="btn small" data-op="CX10" type="button">CNOT q1→q0</button>
+        <button class="btn small" data-op="SWAP" type="button">SWAP</button>
+      </div>
+      <div class="btn-row">
+        <button class="btn small secondary" data-op="M0" type="button">Measure q0</button>
+        <button class="btn small secondary" data-op="RESET" type="button">Reset to |00⟩</button>
+      </div>
+      <p class="small muted">Circuit so far: <span class="history">(none)</span></p>
+      <p class="state" style="font-size:1.2rem" aria-live="polite"></p>
+      <div class="sep card small" style="padding:.7rem 1rem"></div>
+    </div>
+    <div>
+      <div class="eyebrow">Amplitudes and probabilities (order |q0 q1⟩)</div>
+      <div class="amps"></div>
+      <div class="note small muted"></div>
+    </div>
+  </div>
+</div>
+<script>
+  import { State, GATES, abs2, mul, add, scale, c } from '../lib/sim';
+  import { amp, ketString } from '../lib/ui';
+  document.querySelectorAll<HTMLElement>('.two-lab').forEach((root) => {
+    const q = <T,>(s: string) => root.querySelector(s) as T;
+    let s = new State(2);
+    let hist: string[] = [];
+    function draw(msg = '') {
+      q<HTMLElement>('.state').innerHTML = `|ψ⟩ = ${ketString(s.amps, 2)}`;
+      q<HTMLElement>('.history').textContent = hist.length ? hist.join(' → ') : '(none)';
+      const [a, b, cc, d] = s.amps;
+      const lhs = mul(a, d), rhs = mul(b, cc);
+      const diff = Math.sqrt(abs2(add(lhs, scale(rhs, -1))));
+      const ent = diff > 1e-9;
+      q<HTMLElement>('.sep').innerHTML = `<strong>Separable test:</strong> a state α₀₀|00⟩+α₀₁|01⟩+α₁₀|10⟩+α₁₁|11⟩ is a product of two single qubits exactly when α₀₀α₁₁ = α₀₁α₁₀.<br>
+        Here α₀₀α₁₁ = ${amp(lhs)} and α₀₁α₁₀ = ${amp(rhs)} → <strong style="color:${ent ? 'var(--bad)' : 'var(--good)'}">${ent ? 'ENTANGLED' : 'separable (a product state)'}</strong>`;
+      q<HTMLElement>('.amps').innerHTML = s.amps.map((z, i) => {
+        const p = abs2(z), neg = z.re < -1e-9 || (Math.abs(z.re) < 1e-9 && z.im < 0);
+        return `<div style="display:grid;grid-template-columns:3.2rem 1fr 4.6rem;gap:.6rem;align-items:center;margin:.35rem 0">
+          <code>|${s.label(i)}⟩</code>
+          <div class="bar"><span style="width:${(p * 100).toFixed(1)}%;background:${neg ? 'var(--bad)' : 'var(--accent)'}"></span></div>
+          <span class="small">${amp(z)}</span></div>`;
+      }).join('') + '<p class="small muted">Bar length = probability. Pink bar = negative amplitude (the sign is invisible to a 0/1 measurement but matters for interference).</p>';
+      q<HTMLElement>('.note').innerHTML = msg;
+    }
+    root.querySelectorAll<HTMLButtonElement>('[data-op]').forEach((btn) => btn.addEventListener('click', () => {
+      const op = btn.dataset.op!;
+      let msg = '';
+      switch (op) {
+        case 'H0': s.apply1(GATES.H, 0); break;
+        case 'H1': s.apply1(GATES.H, 1); break;
+        case 'X0': s.apply1(GATES.X, 0); break;
+        case 'X1': s.apply1(GATES.X, 1); break;
+        case 'Z0': s.apply1(GATES.Z, 0); break;
+        case 'CX01': s.cx(0, 1); break;
+        case 'CX10': s.cx(1, 0); break;
+        case 'SWAP': s.swap(0, 1); break;
+        case 'M0': {
+          const before = ketString(s.amps, 2);
+          const r = s.measure(0);
+          const p1 = s.prob1(1);
+          msg = `You measured q0 = <strong>${r}</strong>. The state was ${before}; every term with q0 ≠ ${r} was deleted and the rest renormalised. q1 now has P(1) = ${p1.toFixed(2)}${p1 < 1e-9 || p1 > 1 - 1e-9 ? ': fully determined by q0\'s result, the signature of entanglement.' : '.'}`;
+          break;
+        }
+        case 'RESET': s = new State(2); hist = []; draw(); return;
+      }
+      hist.push(btn.textContent!.trim());
+      draw(msg);
+    }));
+    void c;
+    draw();
+  });
+</script>

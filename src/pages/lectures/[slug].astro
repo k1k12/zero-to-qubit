@@ -1,0 +1,98 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { tex } from '../../lib/tex';
+
+export async function getStaticPaths() {
+  const all = (await getCollection('lectures')).sort((a, b) => a.data.number - b.data.number);
+  return all.map((entry, i) => ({ params: { slug: entry.id }, props: { entry, prev: all[i - 1], next: all[i + 1] } }));
+}
+const { entry, prev, next } = Astro.props;
+const { Content, headings } = await render(entry);
+const d = entry.data;
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+---
+<Base title={`Lecture ${d.number}: ${d.title}`} description={d.blurb}>
+  <div class="lesson">
+    <nav class="toc no-print" aria-label="On this page">
+      <div class="eyebrow" style="margin-bottom:.4rem">Lecture {d.number}</div>
+      <ol>
+        {toc.map((h) => <li><a class={`depth-${h.depth}`} href={`#${h.slug}`}>{h.text}</a></li>)}
+      </ol>
+      <hr />
+      <a href={`/summaries/${entry.id}`}>One-page summary ↗</a><br />
+      <a href={`/flashcards?lecture=${d.number}`}>Flashcards for this lecture</a><br />
+      <a href={`/quiz?lecture=${d.number}`}>Quiz this lecture</a>
+    </nav>
+    <article>
+      <div class="eyebrow">Lecture {d.number} · {d.lecturer} · about {d.minutes} min</div>
+      <h1>{d.title}</h1>
+      <p class="muted" style="font-size:1.08rem;max-width:760px">{d.blurb}</p>
+
+      <div class="card no-print" style="display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between;margin:1.2rem 0;max-width:820px">
+        <div>
+          <div class="eyebrow">How much help?</div>
+          <div class="guidance" role="group" aria-label="Guidance level for worked exercises">
+            <button type="button" data-g="full">Full working</button>
+            <button type="button" data-g="some">Some (hide the second half)</button>
+            <button type="button" data-g="exam">Exam mode</button>
+          </div>
+        </div>
+        <div>
+          <div class="eyebrow">How well do you know this?</div>
+          <div class="guidance" role="group" aria-label="Your mastery of this lecture" data-slug={entry.id} id="mastery">
+            <button type="button" data-m="none">Not yet</button>
+            <button type="button" data-m="shaky">Shaky</button>
+            <button type="button" data-m="solid">Solid</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card prose" style="max-width:820px">
+        <div class="eyebrow">By the end you can</div>
+        <ul style="margin:.3rem 0 0">{d.objectives.map((o) => <li set:html={tex(o)} />)}</ul>
+        {d.prereqs.length > 0 && <p class="small muted" style="margin-bottom:0">Builds on: {d.prereqs.map((p, i) => <>{i > 0 && ', '}<a href={`/lectures#l${p}`}>Lecture {p}</a></>)}</p>}
+      </div>
+
+      <div class="prose lecture-body" style="max-width:820px">
+        <Content />
+      </div>
+
+      <nav class="btn-row no-print" style="justify-content:space-between;margin-top:3rem;max-width:820px" aria-label="Lecture navigation">
+        {prev ? <a class="btn secondary" href={`/lectures/${prev.id}`}>← Lecture {prev.data.number}: {prev.data.title}</a> : <span />}
+        {next && <a class="btn" href={`/lectures/${next.id}`}>Lecture {next.data.number}: {next.data.title} →</a>}
+      </nav>
+    </article>
+  </div>
+</Base>
+<script>
+  import { load, save, getMastery, setMastery, type Mastery } from '../../lib/store';
+  const d = document.documentElement;
+  // Guidance level (shared across lectures)
+  const gBtns = document.querySelectorAll<HTMLButtonElement>('[data-g]');
+  const setG = (g: string) => { d.dataset.guidance = g; save('guidance', g); gBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.g === g))); };
+  gBtns.forEach((b) => b.addEventListener('click', () => setG(b.dataset.g!)));
+  setG(load('guidance', 'full'));
+  // "Some" mode: blur the second half of each worked solution; click a step to reveal it
+  document.querySelectorAll('.exercise').forEach((ex) => {
+    const lis = ex.querySelectorAll<HTMLLIElement>('.steps li');
+    lis.forEach((li, i) => { if (i >= Math.ceil(lis.length / 2)) { li.classList.add('fade'); li.tabIndex = 0; li.title = 'Try this step yourself, then click to reveal'; } });
+    lis.forEach((li) => { const show = () => li.classList.add('shown'); li.addEventListener('click', show); li.addEventListener('keydown', (e) => { if ((e as KeyboardEvent).key === 'Enter') show(); }); });
+    ex.querySelector('.exam-reveal')?.addEventListener('click', () => ex.classList.add('revealed'));
+  });
+  // Mastery
+  const box = document.getElementById('mastery')!;
+  const slug = box.dataset.slug!;
+  const mBtns = box.querySelectorAll<HTMLButtonElement>('[data-m]');
+  const setM = (m: Mastery) => { mBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.m === m))); };
+  setM(getMastery()[slug] ?? 'none');
+  mBtns.forEach((b) => b.addEventListener('click', () => { setMastery(slug, b.dataset.m as Mastery); setM(b.dataset.m as Mastery); }));
+  save('lastLecture', slug);
+  // Highlight the current section in the contents list
+  const links = new Map<string, HTMLAnchorElement>();
+  document.querySelectorAll<HTMLAnchorElement>('.toc a[href^="#"]').forEach((a) => links.set(a.getAttribute('href')!.slice(1), a));
+  const obs = new IntersectionObserver((es) => es.forEach((e) => {
+    if (e.isIntersecting) { links.forEach((a) => a.classList.remove('active')); links.get(e.target.id)?.classList.add('active'); }
+  }), { rootMargin: '0px 0px -75% 0px' });
+  document.querySelectorAll('.lecture-body h2[id], .lecture-body h3[id]').forEach((h) => obs.observe(h));
+</script>

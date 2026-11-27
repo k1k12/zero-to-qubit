@@ -1,0 +1,99 @@
+---
+import Base from '../layouts/Base.astro';
+import { CARDS } from '../data/cards';
+import { LECTURES } from '../data/meta';
+import { tex } from '../lib/tex';
+const data = CARDS.map((c) => ({ id: c.id, lecture: c.lecture, q: tex(c.q), a: tex(c.a) }));
+---
+<Base title="Flashcards">
+  <div class="eyebrow">Practice</div>
+  <h1>Flashcards</h1>
+  <p class="muted" style="max-width:760px">Say the answer in your head (or type it), then reveal and be honest: <strong>Forgot</strong> or <strong>Remembered</strong>. The scheduler (FSRS, the algorithm modern Anki uses) brings each card back just before you'd forget it, so a few minutes a day beats a long cram.</p>
+
+  <div class="grid" style="grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:1.5rem;align-items:start" id="fc-layout">
+    <aside class="card">
+      <div class="eyebrow">Decks</div>
+      <ul id="decks" style="list-style:none;padding:0;margin:.4rem 0 0"></ul>
+      <hr />
+      <label class="small"><input type="checkbox" id="type-first" /> Type my answer before revealing</label>
+      <p class="small muted">Keys: <kbd>Space</kbd> reveal · <kbd>1</kbd> forgot · <kbd>2</kbd> remembered</p>
+    </aside>
+    <section>
+      <div id="card" class="card" style="min-height:320px;display:flex;flex-direction:column;gap:1rem" aria-live="polite"></div>
+      <p class="small muted" id="progress"></p>
+    </section>
+  </div>
+  <script type="application/json" id="fc-data" set:html={JSON.stringify({ data, lectures: LECTURES })} />
+</Base>
+<style is:global>
+  @media (max-width: 760px) { #fc-layout { grid-template-columns: 1fr !important; } }
+  #decks a { display: flex; justify-content: space-between; padding: .3rem .5rem; border-radius: 8px; text-decoration: none; color: var(--text); }
+  #decks a[aria-current="true"] { background: var(--bg-3); }
+  .face { font-size: 1.2rem; }
+</style>
+<script>
+  import { dueIds, review, preview } from '../lib/srs';
+  import { load, save } from '../lib/store';
+  type C = { id: string; lecture: number; q: string; a: string };
+  const { data, lectures } = JSON.parse(document.getElementById('fc-data')!.textContent!) as { data: C[]; lectures: { n: number; short: string }[] };
+  const params = new URLSearchParams(location.search);
+  const lec = Number(params.get('lecture')) || 0;
+  const NEW_PER_SESSION = 10;
+
+  const decks = document.getElementById('decks')!;
+  const counts = (n: number) => { const ids = data.filter((c) => !n || c.lecture === n).map((c) => c.id); const d = dueIds(ids); return `${d.due.length} due · ${d.fresh.length} new`; };
+  decks.innerHTML = [{ n: 0, short: 'All lectures' }, ...lectures].map((l) => `<li><a href="/flashcards${l.n ? `?lecture=${l.n}` : ''}" aria-current="${l.n === lec}"><span>${l.n ? `L${l.n} · ` : ''}${l.short}</span></a><div class="small muted" style="padding:0 .5rem .3rem">${counts(l.n)}</div></li>`).join('');
+
+  const pool = data.filter((c) => !lec || c.lecture === lec);
+  const { due, fresh } = dueIds(pool.map((c) => c.id));
+  let queue = [...due, ...fresh.slice(0, NEW_PER_SESSION)].map((id) => pool.find((c) => c.id === id)!);
+  let done = 0, revealed = false;
+  const cardEl = document.getElementById('card')!;
+  const typeFirst = document.getElementById('type-first') as HTMLInputElement;
+  typeFirst.checked = load('typeFirst', false);
+  typeFirst.addEventListener('change', () => { save('typeFirst', typeFirst.checked); show(); });
+
+  function show() {
+    revealed = false;
+    document.getElementById('progress')!.textContent = `${done} reviewed this session · ${queue.length} left`;
+    if (!queue.length) {
+      cardEl.innerHTML = `<h2 style="margin:0">All caught up${lec ? ` for Lecture ${lec}` : ''}.</h2><p>Come back tomorrow: the cards you just reviewed will be waiting when they're due. Spacing is the point.</p><div class="btn-row"><a class="btn" href="/quiz">Try a mixed quiz</a><a class="btn secondary" href="/">Home</a></div>`;
+      return;
+    }
+    const c = queue[0];
+    cardEl.innerHTML = `<div class="eyebrow">Lecture ${c.lecture}</div><div class="face">${c.q}</div>
+      ${typeFirst.checked ? '<label class="small">Your answer<textarea id="typed" placeholder="Write it before you look"></textarea></label>' : ''}
+      <div class="btn-row"><button class="btn" id="reveal" type="button">Show answer (Space)</button></div>`;
+    document.getElementById('reveal')!.addEventListener('click', reveal);
+    (document.getElementById('typed') as HTMLTextAreaElement | null)?.focus();
+  }
+  function reveal() {
+    if (revealed || !queue.length) return;
+    revealed = true;
+    const c = queue[0];
+    const p = preview(c.id);
+    const typed = (document.getElementById('typed') as HTMLTextAreaElement | null)?.value;
+    cardEl.innerHTML = `<div class="eyebrow">Lecture ${c.lecture}</div><div class="face">${c.q}</div>
+      ${typed ? `<div class="small"><span class="muted">You wrote:</span> ${typed.replace(/</g, '&lt;')}</div>` : ''}
+      <div class="callout idea" style="margin:0"><div class="callout-title">Answer</div>${c.a}</div>
+      <div class="btn-row">
+        <button class="btn secondary" data-g="1" type="button">1 · Forgot <span class="small muted">(again ${p.forgot})</span></button>
+        <button class="btn" data-g="3" type="button">2 · Remembered <span class="small" style="opacity:.8">(next ${p.remembered})</span></button>
+      </div>`;
+    cardEl.querySelectorAll<HTMLButtonElement>('[data-g]').forEach((b) => b.addEventListener('click', () => grade(Number(b.dataset.g) as 1 | 3)));
+  }
+  function grade(g: 1 | 3) {
+    const c = queue.shift()!;
+    review(c.id, g);
+    done++;
+    if (g === 1) queue.splice(Math.min(3, queue.length), 0, c); // see it again a few cards later
+    show();
+  }
+  document.addEventListener('keydown', (e) => {
+    if ((e.target as HTMLElement).tagName === 'TEXTAREA') return;
+    if (e.key === ' ') { e.preventDefault(); reveal(); }
+    if (revealed && e.key === '1') grade(1);
+    if (revealed && e.key === '2') grade(3);
+  });
+  show();
+</script>

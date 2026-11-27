@@ -1,0 +1,58 @@
+---
+// Two qubits as a 2x2 grid of amplitudes. A product state has proportional rows; entanglement
+// breaks that. Meanwhile qubit A's own Bloch vector shrinks into the sphere.
+---
+<div class="lab ent">
+  <div class="eyebrow">Visual · what entanglement does to each qubit</div>
+  <p class="notice">The state is cos t |00⟩ + e<sup>iφ</sup> sin t |11⟩, drawn as a grid (rows = qubit A, columns = qubit B; dot area = probability, colour = phase). <strong>Slide t</strong> from 0 to 45°. Watch qubit A's own Bloch arrow (right): it <strong>shrinks into the middle</strong> of the sphere. A maximally entangled qubit has no state of its own: on its own it's a 50/50 coin.</p>
+  <div class="lab-grid">
+    <div>
+      <label class="small">t: <span class="v-t"></span><input type="range" class="t" min="0" max="90" value="0" /></label>
+      <label class="small">phase φ on |11⟩: <span class="v-p"></span><input type="range" class="p" min="0" max="360" value="0" step="15" /></label>
+      <svg class="grid2" viewBox="0 0 320 260" width="100%" style="max-width:360px" role="img" aria-label="Two by two grid of amplitudes"></svg>
+      <div class="readout small"></div>
+    </div>
+    <div>
+      <svg class="blochA" viewBox="-130 -130 260 290" width="100%" style="max-width:300px" role="img" aria-label="Qubit A's reduced Bloch vector"></svg>
+      <div class="bars"></div>
+    </div>
+  </div>
+</div>
+<script>
+  import { bars } from '../lib/ui';
+  document.querySelectorAll<HTMLElement>('.ent').forEach((root) => {
+    const q = <T,>(s: string) => root.querySelector(s) as T;
+    const tIn = q<HTMLInputElement>('.t'), pIn = q<HTMLInputElement>('.p');
+    function draw() {
+      const t = (+tIn.value * Math.PI) / 180, ph = +pIn.value;
+      q<HTMLElement>('.v-t').textContent = `${tIn.value}°`;
+      q<HTMLElement>('.v-p').textContent = `${ph}°`;
+      const amps = [{ m: Math.cos(t), ph: 0 }, { m: 0, ph: 0 }, { m: 0, ph: 0 }, { m: Math.sin(t), ph }];
+      const cell = (i: number, x: number, y: number) => {
+        const { m, ph: p } = amps[i];
+        const r = 42 * m; // area ∝ m²
+        return `<rect x="${x - 60}" y="${y - 60}" width="120" height="110" rx="10" fill="var(--bg-2)" stroke="var(--line)"/>
+          ${r > 0.5 ? `<circle cx="${x}" cy="${y - 5}" r="${r.toFixed(1)}" fill="hsl(${(260 + p) % 360} 70% 62%)" fill-opacity="0.85"/>` : ''}
+          <text x="${x - 52}" y="${y + 42}" class="svg-muted" font-size="11">|${['00', '01', '10', '11'][i]}⟩ ${(m * m * 100).toFixed(0)}%</text>`;
+      };
+      q<SVGSVGElement>('.grid2').innerHTML = `<text x="150" y="16" text-anchor="middle" class="svg-muted" font-size="12">qubit B: 0 · 1</text>
+        <text x="10" y="80" class="svg-muted" font-size="12">A=0</text><text x="10" y="200" class="svg-muted" font-size="12">A=1</text>
+        ${cell(0, 120, 80)}${cell(1, 245, 80)}${cell(2, 120, 200)}${cell(3, 245, 200)}`;
+      // reduced state of A: diag(cos², sin²), no coherence → Bloch vector (0,0,cos 2t)
+      const z = Math.cos(2 * t), conc = Math.abs(Math.sin(2 * t));
+      q<HTMLElement>('.readout').innerHTML = `Product test: α₀₀α₁₁ = ${(Math.cos(t) * Math.sin(t)).toFixed(3)} vs α₀₁α₁₀ = 0 → <strong style="color:${conc > 1e-6 ? 'var(--bad)' : 'var(--good)'}">${conc > 1e-6 ? 'entangled' : 'separable'}</strong>. Entanglement (concurrence) = |sin 2t| = ${conc.toFixed(3)}.`;
+      const R = 100, cy = -z * R;
+      q<SVGSVGElement>('.blochA').innerHTML = `<circle r="${R}" fill="color-mix(in srgb, var(--accent) 6%, transparent)" stroke="var(--muted)"/>
+        <ellipse rx="${R}" ry="${R * 0.28}" fill="none" stroke="var(--muted)" stroke-dasharray="3 3"/>
+        <text x="-12" y="${-R - 10}" fill="var(--alpha)" font-size="13">|0⟩</text><text x="-12" y="${R + 22}" fill="var(--beta)" font-size="13">|1⟩</text>
+        <line x1="0" y1="0" x2="0" y2="${cy}" stroke="var(--accent)" stroke-width="5" stroke-linecap="round"/><circle cx="0" cy="${cy}" r="7" fill="var(--accent)"/><circle r="3" fill="var(--text)"/>
+        <text x="-120" y="${R + 48}" class="svg-muted" font-size="12">Qubit A on its own · length ${Math.abs(z).toFixed(2)}</text>`;
+      bars(q<HTMLElement>('.bars'), [
+        { label: 'Qubit A alone: P(0)', p: Math.cos(t) ** 2, colour: 'var(--alpha)' },
+        { label: 'Purity of A\'s state (1 = pure, 0.5 = fully mixed)', p: (1 + z * z) / 2, colour: 'var(--muted)' },
+      ]);
+    }
+    tIn.addEventListener('input', draw); pIn.addEventListener('input', draw);
+    draw();
+  });
+</script>

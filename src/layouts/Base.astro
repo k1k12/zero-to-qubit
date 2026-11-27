@@ -1,0 +1,110 @@
+---
+import 'katex/dist/katex.min.css';
+import '../styles/global.css';
+
+interface Props { title: string; description?: string; wide?: boolean }
+const { title, description = 'Learn CSC3132 Introduction to Quantum Computing, lecture by lecture, with visuals, worked exercises and practice.', wide = true } = Astro.props;
+const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const nav: [string, string, string[]][] = [
+  ['/lectures', 'Learn', ['/lectures', '/summaries']],
+  ['/visuals', 'Visuals', ['/visuals']],
+  ['/practice', 'Practice', ['/practice', '/flashcards', '/quiz', '/mock-exam']],
+  ['/code-lab', 'Code lab', ['/code-lab']],
+  ['/explore', 'Explore', ['/explore', '/ideas', '/map', '/notation', '/history', '/library', '/tools', '/about']],
+];
+---
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{title} · Zero to Qubit</title>
+  <meta name="description" content={description} />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Zero to Qubit" />
+  <meta property="og:title" content={`${title} · Zero to Qubit`} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={new URL(Astro.url.pathname, Astro.site)} />
+  <meta name="twitter:card" content="summary" />
+  <script is:inline>
+    // Apply saved display settings before the page paints, so there is no flash.
+    (function () {
+      var d = document.documentElement;
+      function get(k, f) { try { var v = localStorage.getItem('qn:' + k); return v === null ? f : JSON.parse(v); } catch (e) { return f; } }
+      var prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+      d.dataset.theme = get('theme', prefersLight ? 'light' : 'dark');
+      d.dataset.largeText = String(get('largeText', false));
+      d.dataset.reduceMotion = String(get('reduceMotion', window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches));
+      d.dataset.guidance = get('guidance', 'full');
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="wrap">
+      <a class="logo" href="/" aria-label="Zero to Qubit, home">
+        <img src="/favicon.svg" width="26" height="26" alt="" />
+        <span>Zero to Qubit</span>
+      </a>
+      <nav class="nav" aria-label="Main">
+        {nav.map(([href, label, prefixes]) => (
+          <a href={href} aria-current={prefixes.some((p) => path.startsWith(p)) ? 'page' : undefined}>{label}</a>
+        ))}
+      </nav>
+      <div class="tools">
+        <a class="icon-btn" href="/notation#search" title="Search notation (/)" aria-label="Search notation">⌕</a>
+        <button class="icon-btn" id="settings-btn" aria-expanded="false" aria-controls="settings-panel" aria-label="Display settings" title="Display settings">Aa</button>
+      </div>
+    </div>
+    <div class="settings-panel" id="settings-panel" hidden>
+      <div class="eyebrow">Display</div>
+      <label><input type="checkbox" id="set-light" /> Light theme</label>
+      <label><input type="checkbox" id="set-large" /> Larger text</label>
+      <label><input type="checkbox" id="set-motion" /> Reduce motion</label>
+      <p class="small muted" style="margin:.6rem 0 0">Keyboard: <kbd>/</kbd> notation search · <kbd>?</kbd> shortcuts on practice pages. Settings are saved in this browser.</p>
+    </div>
+  </header>
+  <main id="main" tabindex="-1">
+    <div class={wide ? 'wrap' : 'wrap prose'}>
+      <slot />
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>A study companion for Newcastle University's CSC3132 Introduction to Quantum Computing. Written to explain the lectures, not to replace them: if something here disagrees with your lecturers, they win (and tell me).</p>
+      <p><a href="/accessibility">Accessibility</a> · <a href="/about">How this site teaches</a> · <a href="/explore">Everything else</a> · Progress is stored only in your browser.</p>
+    </div>
+  </footer>
+  <script>
+    import { load, save } from '../lib/store';
+    const d = document.documentElement;
+    const btn = document.getElementById('settings-btn')!;
+    const panel = document.getElementById('settings-panel')!;
+    btn.addEventListener('click', () => {
+      const open = panel.hidden;
+      panel.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !panel.hidden) { panel.hidden = true; btn.setAttribute('aria-expanded', 'false'); btn.focus(); }
+      const t = e.target as HTMLElement;
+      if (e.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName) && !t.isContentEditable) {
+        e.preventDefault(); location.href = '/notation#search';
+      }
+    });
+    const light = document.getElementById('set-light') as HTMLInputElement;
+    const large = document.getElementById('set-large') as HTMLInputElement;
+    const motion = document.getElementById('set-motion') as HTMLInputElement;
+    light.checked = d.dataset.theme === 'light';
+    large.checked = d.dataset.largeText === 'true';
+    motion.checked = d.dataset.reduceMotion === 'true';
+    light.addEventListener('change', () => { d.dataset.theme = light.checked ? 'light' : 'dark'; save('theme', d.dataset.theme); });
+    large.addEventListener('change', () => { d.dataset.largeText = String(large.checked); save('largeText', large.checked); });
+    motion.addEventListener('change', () => { d.dataset.reduceMotion = String(motion.checked); save('reduceMotion', motion.checked); });
+    void load;
+  </script>
+</body>
+</html>

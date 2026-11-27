@@ -1,0 +1,16 @@
+---
+// A worked exercise. Children: the question text, then <Steps>, then <Answer>.
+// The Guidance switch (Full / Some / Exam) controls how much of the working is visible.
+interface Props { title: string; from?: string; id?: string }
+const { title, from, id } = Astro.props;
+---
+<section class="exercise" id={id}>
+  <header>
+    <h4>{title}</h4>
+    {from && <span class="pill">{from}</span>}
+  </header>
+  <div class="body">
+    <slot />
+    <button class="btn small secondary exam-reveal" type="button">Show the worked solution</button>
+  </div>
+</section>

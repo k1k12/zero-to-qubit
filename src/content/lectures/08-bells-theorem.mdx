@@ -1,0 +1,257 @@
+---
+number: 8
+title: Bell's theorem
+lecturer: Dr Jonte Hance
+blurb: How Bell turned Einstein's philosophical objection into an experiment. Build the CHSH inequality (S ≤ 2) from hidden variables, watch quantum mechanics reach 2√2, then see the experiments, loopholes and the assumptions you must give up.
+minutes: 70
+prereqs: [3, 4, 5]
+objectives:
+  - Describe the Bohm–EPR experiment with settings $a_0, a_1, b_0, b_1$ and outcomes $\pm1$
+  - Prove $\gamma = A_0B_0 + A_1B_0 + A_0B_1 - A_1B_1 = \pm 2$ and hence $|S|\le2$
+  - Derive $E(a,b) = -\cos\theta$ for the singlet and compute $S = -2\sqrt2$ at the optimal angles
+  - Name the key experiments and loopholes
+  - List the assumptions of Bell's theorem and explain counterfactual definiteness
+sheet:
+  - title: The setup (Bohm–EPR)
+    points:
+      - "Source → entangled pair; Alice picks $a_0$ or $a_1$, Bob picks $b_0$ or $b_1$; results $\\pm1$"
+      - "$E(a,b)$ = average of the product $A\\cdot B$ = P(same) − P(different)"
+  - title: The inequality
+    points:
+      - "LHV: each pair carries $A_0, A_1, B_0, B_1 \\in\\{\\pm1\\}$"
+      - "$\\gamma = A_0(B_0+B_1) + A_1(B_0-B_1) = \\pm2$"
+      - "Average: $|S| = |E(a_0,b_0)+E(a_1,b_0)+E(a_0,b_1)-E(a_1,b_1)| \\le 2$"
+  - title: Quantum violation
+    points:
+      - "Singlet $\\ket{\\Psi^-}$: $E(a,b) = -\\cos\\theta_{ab}$"
+      - "$a_0 = 0°, a_1 = 90°, b_0 = 45°, b_1 = -45°$ ⇒ $S = -2\\sqrt2$"
+      - "Tsirelson: $|S|\\le 2\\sqrt2$ for any quantum state"
+  - title: Experiments and assumptions
+    points:
+      - "1972 Clauser & Freedman; 1982 Aspect; 2015 loophole-free (Delft, Vienna, NIST); Nobel 2022"
+      - "Loopholes: locality, memory, detection, coincidence"
+      - "Assumptions: hidden variables; locality + statistical independence (factorisability); counterfactual definiteness / matching"
+---
+import Callout from '../../components/Callout.astro';
+import Check from '../../components/Check.astro';
+import LockIn from '../../components/LockIn.astro';
+import Deeper from '../../components/Deeper.astro';
+import Exercise from '../../components/Exercise.astro';
+import Steps from '../../components/Steps.astro';
+import Answer from '../../components/Answer.astro';
+import BellLab from '../../components/BellLab.astro';
+
+## Recap: the question Bell answered
+
+Entangled states can't be written as a product, and measuring one half instantly changes the other's state (Lecture 5). Einstein concluded quantum mechanics was incomplete: there must be a **local hidden-variable (LHV) theory** underneath in which particles "know" their results in advance. For 30 years nobody could see any experimental difference between the two pictures. Bell (1964) found one; Clauser, Horne, Shimony and Holt (CHSH, 1969) turned it into the form we use.
+
+<Callout type="idea" title="The plan">
+1. Assume an LHV theory and derive a limit: $|S| \le 2$.
+2. Compute what quantum mechanics predicts: $|S|$ up to $2\sqrt2 \approx 2.83$.
+3. Do the experiment. Nature gives about 2.8. So at least one LHV assumption is false.
+</Callout>
+
+## The Bohm–EPR experiment
+
+A source emits pairs of entangled spin-½ particles (or photons). One goes to Alice's spin meter, one to Bob's.
+
+- Alice measures her particle along direction $a_0$ **or** $a_1$ (her choice, each run).
+- Bob measures along $b_0$ **or** $b_1$.
+- Every measurement gives $+1$ or $-1$ (in units of $\hbar/2$).
+
+They repeat many times and then compare results to look for correlations.
+
+<Callout type="notation" title="Correlation E(a, b)">
+For a run $i$ with settings $a, b$, write the results as $A_i, B_i\in\{+1,-1\}$. Their product $A_iB_i$ is $+1$ if they agree and $-1$ if they differ. The **correlation** is its average:
+
+$$
+E(a, b) = \frac1N\sum_i A_iB_i = P(\text{same}) - P(\text{different}).
+$$
+
+$E = +1$: always agree. $E = -1$: always disagree. $E = 0$: no correlation.
+</Callout>
+
+## Making a Bell inequality
+
+**Assume an LHV theory.** Then every pair leaves the source carrying definite answers for **all four** settings, whether or not they are measured: $A_0$ and $A_1$ for Alice's two settings, $B_0$ and $B_1$ for Bob's, each $\pm1$. Locality means Alice's answer doesn't depend on Bob's setting, and vice versa.
+
+For one pair, define
+
+$$
+\gamma = A_0B_0 + A_1B_0 + A_0B_1 - A_1B_1 = A_0(B_0 + B_1) + A_1(B_0 - B_1).
+$$
+
+Since $B_0, B_1 = \pm1$, either they are equal (then $B_0+B_1 = \pm2$ and $B_0-B_1 = 0$) or opposite (then $B_0+B_1 = 0$ and $B_0 - B_1 = \pm2$). Either way exactly one bracket survives, times $A_0$ or $A_1 = \pm1$. So
+
+$$
+\gamma = \pm 2 \quad\text{for every pair.}
+$$
+
+Averaging over $N$ pairs, the average of numbers that are each $\pm2$ lies between $-2$ and $2$:
+
+$$
+|S| = \big|E(a_0,b_0) + E(a_1,b_0) + E(a_0,b_1) - E(a_1,b_1)\big| \le 2.
+$$
+
+This is the **CHSH inequality**.
+
+<Check
+  mode="predict"
+  q="Can quantum mechanics, with an entangled pair, make |S| bigger than 2?"
+  options={["No: 2 is a mathematical limit", "Yes, a little (about 2.1)", "Yes, up to about 2.83", "Yes, up to 4"]}
+  answer={2}
+  explain="Quantum mechanics reaches $2\sqrt2 \approx 2.83$ (Tsirelson's bound). The algebraic maximum 4 would need correlations even stronger than quantum ones (Popescu–Rohrlich boxes), which never show up in nature."
+/>
+
+### The results table (from the lecture)
+
+Each row is one hypothetical pair $i$, with columns for the four setting pairs: I $= a_0b_0$, II $= a_1b_0$, III $= a_0b_1$, IV $= a_1b_1$. Each entry is the pair of results $(A, B)$. In a real run only **one** setting pair is used per $i$; the others are **counterfactual** (what *would* have happened).
+
+| $i$ | I: $a_0b_0$ | II: $a_1b_0$ | III: $a_0b_1$ | IV: $a_1b_1$ | $\gamma_i$ |
+|---|---|---|---|---|---|
+| 1 | +1 −1 | −1 −1 | +1 −1 | −1 −1 | −2 |
+| 2 | +1 +1 | +1 +1 | +1 +1 | +1 +1 | +2 |
+| 3 | +1 +1 | +1 +1 | +1 −1 | +1 −1 | +2 |
+| 4 | +1 +1 | −1 +1 | +1 −1 | −1 −1 | −2 |
+| 5 | +1 −1 | −1 −1 | +1 +1 | −1 +1 | +2 |
+| 6 | +1 −1 | +1 −1 | +1 −1 | +1 −1 | −2 |
+
+Check row 1: products are $-1, +1, -1, +1$, so $\gamma = -1 + 1 - 1 - (+1) = -2$ ✓.
+
+<LockIn ids={['l8-chsh', 'l8-lhv', 'l8-gamma']} />
+
+## Violating it with quantum mechanics
+
+### Quantum correlations
+
+In quantum mechanics, a spin measurement along direction $\hat a$ is the observable $\sigma_a = \hat a\cdot\vec\sigma = a_xX + a_yY + a_zZ$ (eigenvalues $\pm1$). The correlation is an **expectation value**:
+
+$$
+E(a, b) = \bra\Psi\sigma_a\otimes\sigma_b\ket\Psi.
+$$
+
+Use the singlet $\ket{\Psi^-} = \tfrac1{\sqrt2}(\ket{01} - \ket{10})$. It looks the same in every basis (it's anti-correlated along every axis; Lecture 5, exercise 5.4). So we can choose Alice's axis to be $z$ without loss of generality, and put Bob's at angle $\theta$ to it in the x–z plane:
+
+$$
+\sigma_a = Z, \qquad \sigma_b = \cos\theta\, Z + \sin\theta\, X.
+$$
+
+Then $E = \cos\theta\bra{\Psi^-}Z\otimes Z\ket{\Psi^-} + \sin\theta\bra{\Psi^-}Z\otimes X\ket{\Psi^-}$, and the exercise below shows the first is $-1$ and the second $0$:
+
+$$
+E(a,b) = -\cos\theta.
+$$
+
+Same direction ($\theta = 0$): always opposite results. Perpendicular ($90°$): no correlation.
+
+### Choosing the angles
+
+Take $a_0 = 0°$, $a_1 = 90°$, $b_0 = 45°$, $b_1 = -45°$:
+
+| Pair | Angle | $E = -\cos\theta$ |
+|---|---|---|
+| $a_0, b_0$ | 45° | $-\tfrac1{\sqrt2}$ |
+| $a_1, b_0$ | 45° | $-\tfrac1{\sqrt2}$ |
+| $a_0, b_1$ | 45° | $-\tfrac1{\sqrt2}$ |
+| $a_1, b_1$ | 135° | $+\tfrac1{\sqrt2}$ |
+
+$$
+S = -\tfrac1{\sqrt2} - \tfrac1{\sqrt2} - \tfrac1{\sqrt2} - \tfrac1{\sqrt2} = -\tfrac{4}{\sqrt2} = -2\sqrt2 \approx -2.83.
+$$
+
+$|S| = 2\sqrt2 > 2$: **the Bell inequality is violated.** Cirel'son (Tsirelson, 1980) proved no quantum state or measurement can do better.
+
+<BellLab />
+
+For the picture of why −cos θ beats any hidden-variable model, see [the Bell correlation curve](/visuals#bell).
+
+<Callout type="mistake">
+Two easy slips. (1) The minus sign belongs to $E(a_1, b_1)$, the **fourth** term only; check which term your source puts it on (some books order the terms differently, but the minus is always on exactly one). (2) $E = -\cos\theta$ is for the **singlet** $\ket{\Psi^-}$. For $\ket{\Phi^+}$ with settings in the x–z plane, $E = +\cos(\theta_a - \theta_b)$, so the signs (and the best angles) change, though the maximum $|S|$ is still $2\sqrt2$.
+</Callout>
+
+<LockIn ids={['l8-qm', 'l8-E', 'l8-angles']} />
+
+## Experimental tests
+
+- **1972, Clauser & Freedman**: first violation, with photons. But the settings were fixed before the pairs were made, so in principle the source could "know" them.
+- **1980–82, Aspect et al.**: settings switched rapidly *while the photons were in flight*, closing much of the locality gap.
+- **Loopholes** still left open, each a way an LHV model could fake a violation:
+  - **locality**: one side's setting or result could reach the other in time;
+  - **memory**: hidden variables could depend on earlier runs;
+  - **detection**: if many particles go undetected, the detected ones may be a biased sample;
+  - **coincidence**: deciding which detections count as "pairs" can bias the result.
+- **2015, loophole-free tests**: Delft (Hensen et al., electron spins 1.3 km apart), Vienna (Giustina et al., Zeilinger's group) and NIST (Shalm et al.) closed locality and detection loopholes together.
+- **2022 Nobel Prize in Physics**: Aspect, Clauser and Zeilinger.
+
+<LockIn ids={['l8-exp', 'l8-loop']} />
+
+## What exactly does Bell rule out? The assumptions
+
+Deriving $|S|\le2$ quietly used several assumptions. A violation means **at least one** fails, and which one is a matter of interpretation.
+
+1. **Hidden variables**: results are fixed by some (possibly unknown) variable $\lambda$ the pair carries.
+2. **Factorisability**, made of two parts:
+   - **Locality** (no superluminal influence): Alice's result depends only on $\lambda$ and her own setting, not Bob's. Special relativity forbids signalling, though some (Shimony, Redhead) consider a weaker non-local "passion at a distance" that can't be used to signal.
+   - **Statistical independence**: the distribution of $\lambda$ doesn't depend on which settings are chosen. Dropping this is **superdeterminism** (Bell 1977; Hossenfelder & Palmer 2020).
+3. **Comparing different settings**: the inequality combines results for four setting pairs, but each pair is only measured with one. Either:
+   - **statistically**: assume runs with different settings sample the same distribution of $\lambda$. This is what experiments do, but it needs everything except the setting held fixed; Bell's "moons of Jupiter" remark is that you can't control every external factor, so $\lambda$ might vary with the run $i$;
+   - or **counterfactually**: assume unmeasured results still *have* values (**counterfactual definiteness**). They need not be measurable, just exist.
+
+<Callout type="careful" title="A word about the word non-locality">
+Quantum-information people often call any Bell violation "non-locality", even when they don't mean the locality assumption specifically failed. Dr Hance's slides flag this; keep the assumptions separate in exam answers.
+</Callout>
+
+<LockIn ids={['l8-assume']} />
+
+## Worked exercises
+
+<Exercise title="8.1 · Prove E = −cos θ for the singlet" from="Lecture 8 exercise: prove this">
+Show $\bra{\Psi^-}Z\otimes Z\ket{\Psi^-} = -1$ and $\bra{\Psi^-}Z\otimes X\ket{\Psi^-} = 0$, hence $E = -\cos\theta$.
+<Steps>
+1. $Z\otimes Z$ multiplies $\ket{ab}$ by $(-1)^a(-1)^b$: $\ket{01}\to-\ket{01}$, $\ket{10}\to-\ket{10}$.
+2. So $(Z\otimes Z)\ket{\Psi^-} = \tfrac1{\sqrt2}(-\ket{01}+\ket{10}) = -\ket{\Psi^-}$, giving $\bra{\Psi^-}Z\otimes Z\ket{\Psi^-} = -1$.
+3. $Z\otimes X$: X flips the second bit, Z gives $(-1)^{a}$ for the first: $\ket{01}\to\ket{00}$, $\ket{10}\to-\ket{11}$.
+4. So $(Z\otimes X)\ket{\Psi^-} = \tfrac1{\sqrt2}(\ket{00} + \ket{11})$, which is orthogonal to $\ket{\Psi^-}$ (no $\ket{01}$ or $\ket{10}$ terms): expectation 0.
+5. $E = \cos\theta\cdot(-1) + \sin\theta\cdot 0 = -\cos\theta$.
+</Steps>
+<Answer>$E(a,b) = -\cos\theta$, where $\theta$ is the angle between Alice's and Bob's directions.</Answer>
+</Exercise>
+
+<Exercise title="8.2 · Compute S for other angles" from="Problem set style">
+For the singlet, compute S with all four settings along the same axis ($a_0=a_1=b_0=b_1 = 0°$), and with $a_0 = 0°, a_1 = 90°, b_0 = 0°, b_1 = 90°$.
+<Steps>
+1. All equal: every $E = -\cos0 = -1$, so $S = -1 - 1 - 1 - (-1) = -2$. $|S| = 2$: right at the limit, no violation.
+2. Second set: $E(a_0,b_0) = -\cos0 = -1$; $E(a_1,b_0) = -\cos90° = 0$; $E(a_0,b_1) = -\cos(-90°) = 0$; $E(a_1,b_1) = -\cos0 = -1$.
+3. $S = -1 + 0 + 0 - (-1) = 0$.
+</Steps>
+<Answer>$S = -2$ and $S = 0$. Entanglement alone isn't enough; you need well-chosen settings, which is what the 45° offsets achieve.</Answer>
+</Exercise>
+
+<Exercise title="8.3 · Why S can't beat 2 classically, by brute force" from="Lecture 8: results table">
+How many deterministic strategies $(A_0,A_1,B_0,B_1)$ are there, and what values can $\gamma$ take?
+<Steps>
+1. Each of the four is $\pm1$: $2^4 = 16$ strategies.
+2. For each, $\gamma = A_0(B_0+B_1) + A_1(B_0-B_1)$; one bracket is 0 and the other $\pm2$, so $\gamma\in\{-2, +2\}$.
+3. A randomised LHV model just mixes these 16 strategies, and any average of numbers in $[-2, 2]$ stays in $[-2, 2]$.
+</Steps>
+<Answer>16 strategies, $\gamma = \pm2$ for all of them, so $|S|\le2$ for any LHV model.</Answer>
+</Exercise>
+
+<Check
+  q="An experiment measures S = 2.4 ± 0.05. What can you conclude?"
+  options={["Quantum mechanics is wrong", "At least one assumption of Bell's theorem fails in nature", "Signals travel faster than light", "The state was not entangled"]}
+  answer={1}
+  explain="A violation rules out models satisfying **all** the assumptions together (hidden variables, locality, statistical independence, comparability of settings). It does not by itself say which one fails, and it does not allow signalling."
+/>
+
+<Deeper title="Tsirelson's bound in three lines" level="MSc">
+Let $\hat A_0, \hat A_1, \hat B_0, \hat B_1$ be observables with eigenvalues $\pm1$ (so each squares to $I$), Alice's commuting with Bob's. Define $\hat C = \hat A_0(\hat B_0 + \hat B_1) + \hat A_1(\hat B_0 - \hat B_1)$. Then $\hat C^2 = 4I - [\hat A_0, \hat A_1][\hat B_0, \hat B_1]$. Each commutator has norm at most 2, so $\|\hat C^2\|\le 8$ and $|\langle\hat C\rangle|\le 2\sqrt2$. Classically everything commutes, the commutator term vanishes, and you get 2 back. (Landau 1987; Cirel'son 1980.)
+</Deeper>
+
+<Deeper title="Beyond CHSH: GHZ, Hardy, and contextuality" level="MSc">
+Greenberger–Horne–Zeilinger (1989): with three qubits in $\tfrac1{\sqrt2}(\ket{000}+\ket{111})$, quantum mechanics predicts outcomes that LHVs can't match **even once**: no statistics needed. Hardy's paradox does something similar with two qubits. The Kochen–Specker theorem shows a related no-go for *non-contextual* hidden variables, even without spatial separation. Mermin, "Hidden variables and the two theorems of John Bell", Rev. Mod. Phys. 65, 803 (1993) is a superb read.
+</Deeper>
+
+<Deeper title="Device independence and self-testing" level="PhD">
+A maximal violation $|S| = 2\sqrt2$ certifies, up to local changes of basis, that the devices share a singlet and measure along the optimal axes: **self-testing** (Mayers–Yao; Šupić & Bowles, Quantum 4, 337, 2020). This underlies device-independent QKD (demonstrated 2022 by Nadlinger et al. and Zhang et al.) and certified randomness. The 2020 MIP* = RE result (Ji, Natarajan, Vidick, Wright, Yuen) showed that the complexity of non-local games is astonishingly rich, resolving Connes' embedding problem.
+</Deeper>

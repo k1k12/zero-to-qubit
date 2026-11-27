@@ -1,0 +1,102 @@
+---
+import Base from '../layouts/Base.astro';
+import { MOCK, TOTAL } from '../data/mock';
+import { tex } from '../lib/tex';
+---
+<Base title="Mock exam">
+  <div class="eyebrow">Practice · exam conditions</div>
+  <h1>Mock exam <span class="pill">Draft</span></h1>
+  <div class="card no-print" style="max-width:860px">
+    <p style="margin-top:0"><strong>How to use it:</strong> treat it like the real thing. Closed book, pen and paper, timer on. Write full working by hand, then mark yourself against the scheme and log the marks. Your marks are saved in this browser.</p>
+    <p class="small muted" style="margin-bottom:0">This is a <strong>draft</strong> written from the lecture content and problem-set style. The real paper's format hasn't been released, and Lecture 10 (hardware) isn't included yet. {TOTAL} marks; suggested time 90 minutes.</p>
+    <div class="btn-row" style="margin-bottom:0;align-items:center">
+      <button class="btn" id="start" type="button">Start the timer</button>
+      <button class="btn secondary" id="finish" type="button">Finish and show mark schemes</button>
+      <button class="btn secondary small" type="button" onclick="window.print()">Print the paper</button>
+      <span id="clock" style="font-family:var(--mono);font-size:1.3rem;margin-left:auto" aria-live="off">90:00</span>
+    </div>
+  </div>
+
+  <ol class="paper" style="list-style:none;padding:0;max-width:860px">
+    {MOCK.map((q) => (
+      <li class="card question" style="margin-top:1.2rem">
+        <div style="display:flex;justify-content:space-between;gap:1rem;align-items:baseline">
+          <h2 style="margin:0;font-size:1.2rem">Question {q.n}. {q.title}</h2>
+          <span class="small muted">Lecture{q.lectures.length > 1 ? 's' : ''} {q.lectures.join(', ')} · {q.parts.reduce((s, p) => s + p.marks, 0)} marks</span>
+        </div>
+        {q.intro && <p set:html={tex(q.intro)} />}
+        <ol style="list-style:none;padding:0;margin:0">
+          {q.parts.map((p) => (
+            <li class="part" style="padding:.6rem 0;border-top:1px solid var(--line)">
+              <div style="display:grid;grid-template-columns:2rem 1fr auto;gap:.6rem">
+                <strong>({p.label})</strong>
+                <span set:html={tex(p.q)} />
+                <span class="small muted">[{p.marks}]</span>
+              </div>
+              <div class="scheme" hidden>
+                <div class="callout idea" style="margin:.6rem 0 .4rem"><div class="callout-title">Mark scheme</div>
+                  <ul style="margin:0">{p.scheme.map((s) => <li set:html={tex(s)} />)}</ul>
+                </div>
+                <label class="small no-print">Marks you got: <input type="number" class="got" min="0" max={p.marks} step="1" style="width:4.5rem;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:.2rem .4rem" /> / {p.marks}</label>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </li>
+    ))}
+  </ol>
+
+  <div class="card no-print" id="result" hidden style="max-width:860px;margin-top:1.2rem">
+    <h2 style="margin-top:0">Your score</h2>
+    <p id="score" style="font-size:1.4rem"></p>
+    <p class="small muted" id="weak"></p>
+    <div id="history" class="small"></div>
+  </div>
+</Base>
+<script>
+  import { load, save } from '../lib/store';
+  const clock = document.getElementById('clock')!;
+  let left = 90 * 60, timer: number | undefined;
+  const fmt = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+  document.getElementById('start')!.addEventListener('click', (e) => {
+    const b = e.currentTarget as HTMLButtonElement;
+    if (timer) { clearInterval(timer); timer = undefined; b.textContent = 'Resume the timer'; return; }
+    b.textContent = 'Pause';
+    timer = window.setInterval(() => { left = Math.max(0, left - 1); clock.textContent = fmt(left); if (!left) { clearInterval(timer); clock.textContent = "Time's up"; } }, 1000);
+  });
+  const parts = [...document.querySelectorAll<HTMLElement>('.part')];
+  const inputs = [...document.querySelectorAll<HTMLInputElement>('.got')];
+  document.getElementById('finish')!.addEventListener('click', () => {
+    if (timer) clearInterval(timer);
+    parts.forEach((p) => (p.querySelector('.scheme') as HTMLElement).hidden = false);
+    document.getElementById('result')!.hidden = false;
+    inputs[0]?.focus();
+    update();
+  });
+  function update() {
+    const max = inputs.reduce((s, i) => s + Number(i.max), 0);
+    const got = inputs.reduce((s, i) => s + Math.min(Number(i.max), Math.max(0, Number(i.value) || 0)), 0);
+    document.getElementById('score')!.textContent = `${got} / ${max} (${Math.round((got / max) * 100)}%)`;
+    // per-question percentages to point at weak lectures
+    const perQ = [...document.querySelectorAll<HTMLElement>('.question')].map((q) => {
+      const ins = [...q.querySelectorAll<HTMLInputElement>('.got')];
+      const m = ins.reduce((s, i) => s + Number(i.max), 0), g = ins.reduce((s, i) => s + (Number(i.value) || 0), 0);
+      return { title: q.querySelector('h2')!.textContent!, pct: g / m };
+    });
+    const weak = perQ.filter((q) => q.pct < 0.6).map((q) => q.title);
+    document.getElementById('weak')!.textContent = weak.length ? `Below 60%: ${weak.join('; ')}. Revisit those lectures and their worked exercises in Exam mode.` : 'Fill in your marks above as you check each part.';
+    save('mockDraft', inputs.map((i) => i.value));
+  }
+  inputs.forEach((i) => i.addEventListener('input', update));
+  const draft = load<string[]>('mockDraft', []);
+  draft.forEach((v, k) => { if (inputs[k]) inputs[k].value = v; });
+  // keep a history of finished attempts
+  const hist = load<{ at: number; got: number; max: number }[]>('mockHistory', []);
+  const renderHist = () => (document.getElementById('history')!.innerHTML = hist.length ? `<strong>Past attempts:</strong> ${hist.map((h) => `${new Date(h.at).toLocaleDateString('en-GB')}: ${h.got}/${h.max}`).join(' · ')}` : '');
+  renderHist();
+  document.getElementById('result')!.insertAdjacentHTML('beforeend', '<button class="btn small" id="save-attempt" type="button">Save this attempt</button>');
+  document.getElementById('save-attempt')!.addEventListener('click', () => {
+    const max = inputs.reduce((s, i) => s + Number(i.max), 0), got = inputs.reduce((s, i) => s + (Number(i.value) || 0), 0);
+    hist.push({ at: Date.now(), got, max }); save('mockHistory', hist); save('mockDraft', []); renderHist();
+  });
+</script>

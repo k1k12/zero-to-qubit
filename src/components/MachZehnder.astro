@@ -1,0 +1,68 @@
+---
+// A Mach–Zehnder interferometer: the physical version of "H, phase, H".
+---
+<div class="lab mz-lab">
+  <div class="eyebrow">Explore · a single photon in an interferometer</div>
+  <p class="notice">One photon enters at the bottom left. Each half-silvered mirror (beam splitter) acts like a Hadamard gate on "which path". <strong>Notice:</strong> with both beam splitters in, the photon always reaches detector D0, because the two paths to D1 cancel. Remove the second splitter, or add a phase on the upper path, and the cancellation breaks.</p>
+  <div class="lab-grid">
+    <svg viewBox="0 0 420 300" role="img" aria-label="Mach–Zehnder interferometer diagram" style="background:var(--bg);border-radius:12px;border:1px solid var(--line)">
+      <line x1="20" y1="240" x2="80" y2="240" stroke="var(--accent)" stroke-width="3" />
+      <line class="p-low" x1="80" y1="240" x2="320" y2="240" stroke="var(--beta)" stroke-width="3" />
+      <line class="p-up1" x1="80" y1="240" x2="80" y2="60" stroke="var(--alpha)" stroke-width="3" />
+      <line class="p-up2" x1="80" y1="60" x2="320" y2="60" stroke="var(--alpha)" stroke-width="3" />
+      <line class="p-low2" x1="320" y1="240" x2="320" y2="60" stroke="var(--beta)" stroke-width="3" />
+      <line x1="320" y1="60" x2="390" y2="60" stroke="var(--muted)" stroke-width="3" class="out0" />
+      <line x1="320" y1="60" x2="320" y2="20" stroke="var(--muted)" stroke-width="3" class="out1" />
+      <rect x="66" y="226" width="28" height="28" fill="none" stroke="var(--text)" transform="rotate(45 80 240)" />
+      <text x="96" y="272" class="svg-muted" font-size="12">BS1</text>
+      <rect class="bs2" x="306" y="46" width="28" height="28" fill="none" stroke="var(--text)" transform="rotate(45 320 60)" />
+      <text class="bs2" x="336" y="92" font-size="12" fill="var(--muted)">BS2</text>
+      <line x1="66" y1="74" x2="94" y2="46" stroke="var(--text)" stroke-width="3" />
+      <line x1="306" y1="254" x2="334" y2="226" stroke="var(--text)" stroke-width="3" />
+      <rect class="ph" x="180" y="48" width="40" height="24" rx="5" fill="var(--bg-3)" stroke="var(--shaky)" />
+      <text class="ph-t" x="186" y="65" font-size="12" fill="var(--shaky)">φ</text>
+      <circle cx="400" cy="60" r="12" class="d0" fill="var(--bg-3)" stroke="var(--text)" /><text x="390" y="95" class="svg-text" font-size="12">D0</text>
+      <circle cx="320" cy="14" r="12" class="d1" fill="var(--bg-3)" stroke="var(--text)" /><text x="340" y="18" class="svg-text" font-size="12">D1</text>
+      <text x="22" y="230" class="svg-muted" font-size="11">photon in</text>
+      <text x="150" y="40" class="svg-muted" font-size="11">upper path</text>
+      <text x="150" y="262" class="svg-muted" font-size="11">lower path</text>
+    </svg>
+    <div>
+      <label class="small"><input type="checkbox" class="bs2-on" checked /> Second beam splitter in place</label><br />
+      <label class="small">Phase φ on the upper path: <span class="v-ph"></span>
+        <input type="range" class="phase" min="0" max="360" value="0" step="5" />
+      </label>
+      <label class="small"><input type="checkbox" class="spy" /> Put a detector on the upper path (look at which way it went)</label>
+      <div class="probs"></div>
+      <p class="explain small"></p>
+      <p class="small muted">In qubit language: the paths are |0⟩ (lower) and |1⟩ (upper); BS1 is H, the phase shifter is the phase gate P(φ), BS2 is H again. So the circuit is H·P(φ)·H applied to |0⟩: exactly Lecture 4's "H, Z, H = X" when φ = 180°.</p>
+    </div>
+  </div>
+</div>
+<script>
+  import { bars } from '../lib/ui';
+  document.querySelectorAll<HTMLElement>('.mz-lab').forEach((root) => {
+    const q = <T,>(s: string) => root.querySelector(s) as T;
+    const bs2 = q<HTMLInputElement>('.bs2-on'), ph = q<HTMLInputElement>('.phase'), spy = q<HTMLInputElement>('.spy');
+    function draw() {
+      const phi = (+ph.value * Math.PI) / 180;
+      q<HTMLElement>('.v-ph').textContent = `${ph.value}°`;
+      let p0: number;
+      if (!bs2.checked || spy.checked) p0 = 0.5;
+      else p0 = (1 + Math.cos(phi)) / 2; // |(1 + e^{iφ})/2|^2
+      root.querySelectorAll<SVGElement>('.bs2').forEach((e) => (e.style.opacity = bs2.checked ? '1' : '0.15'));
+      q<SVGElement>('.d0').setAttribute('fill', `color-mix(in srgb, var(--good) ${Math.round(p0 * 100)}%, var(--bg-3))`);
+      q<SVGElement>('.d1').setAttribute('fill', `color-mix(in srgb, var(--good) ${Math.round((1 - p0) * 100)}%, var(--bg-3))`);
+      bars(q<HTMLElement>('.probs'), [{ label: 'P(D0)', p: p0, colour: 'var(--alpha)' }, { label: 'P(D1)', p: 1 - p0, colour: 'var(--beta)' }]);
+      q<HTMLElement>('.explain').innerHTML = spy.checked
+        ? 'Looking at which path the photon took is a measurement: it collapses the superposition, the two paths can no longer interfere, and you get 50/50. Information about "which way" destroys interference.'
+        : !bs2.checked
+          ? 'Without the second splitter, nothing recombines the paths, so each detector just sees one path: 50/50, like measuring H|0⟩ = |+⟩.'
+          : Math.abs(p0 - 1) < 1e-9
+            ? 'Both paths reach D1 with opposite signs and cancel (destructive interference): H·H = I.'
+            : `The phase shifts one path relative to the other: P(D0) = cos²(φ/2) = ${p0.toFixed(3)}. Relative phase, invisible on its own, controls where the photon goes.`;
+    }
+    [bs2, ph, spy].forEach((e) => e.addEventListener('input', draw));
+    draw();
+  });
+</script>

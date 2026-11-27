@@ -1,0 +1,180 @@
+---
+number: 7
+title: The no-cloning theorem
+lecturer: Dr Ittoop Puthoor
+blurb: Why nobody can photocopy an unknown quantum state. The story behind it (a faster-than-light telegraph that didn't work), the proof by linearity with Schrödinger's cat, related theorems, and how it makes quantum cryptography (BB84) secure.
+minutes: 50
+prereqs: [4, 6]
+objectives:
+  - State the no-cloning theorem precisely, including what *is* allowed
+  - Reproduce the proof by contradiction using linearity
+  - Explain why CNOT copies $\ket0, \ket1$ but not $\ket+$
+  - Name the related theorems (no-deleting, no-broadcasting, no-signalling)
+  - Explain how BB84 uses no-cloning to detect eavesdroppers
+sheet:
+  - title: The theorem
+    points:
+      - "No unitary $U$ satisfies $U\\ket\\psi\\ket B = \\ket\\psi\\ket\\psi$ for **every** $\\ket\\psi$"
+      - "Wootters & Zurek; Dieks (1982), triggered by Herbert's FLASH (1982)"
+      - "Allowed: copying a known state, or states from one known orthogonal set"
+  - title: The proof
+    points:
+      - "Suppose $U\\ket A\\ket B = \\ket A\\ket A$ and $U\\ket D\\ket B = \\ket D\\ket D$"
+      - "Linearity: $U\\ket H\\ket B = \\tfrac1{\\sqrt2}(\\ket{AA}+\\ket{DD})$ where $\\ket H = \\tfrac1{\\sqrt2}(\\ket A+\\ket D)$"
+      - "But a clone needs $\\ket{HH} = \\tfrac12(\\ket{AA}+\\ket{AD}+\\ket{DA}+\\ket{DD})$. Contradiction"
+      - "Alt.: unitaries preserve $\\braket\\psi\\phi$, cloning maps it to $\\braket\\psi\\phi^2$ ⇒ only 0 or 1"
+  - title: Related and applied
+    points:
+      - "No-deleting, no-broadcasting, no-signalling"
+      - "Error correction must spread info without copying"
+      - "BB84: random bases; eavesdropper can't copy, so she causes ~25% errors on sifted bits"
+---
+import Callout from '../../components/Callout.astro';
+import Check from '../../components/Check.astro';
+import LockIn from '../../components/LockIn.astro';
+import Deeper from '../../components/Deeper.astro';
+import Exercise from '../../components/Exercise.astro';
+import Steps from '../../components/Steps.astro';
+import Answer from '../../components/Answer.astro';
+import CloneLab from '../../components/CloneLab.astro';
+
+## Copying is everywhere, except here
+
+Digital files copy perfectly; DNA copies itself. Classically, copying a bit is trivial: $0\to000$, $1\to111$. You can even copy the quantum **basis states**: $\ket0\to\ket{000}$, $\ket1\to\ket{111}$. But an **arbitrary, unknown** state $\ket\psi = \alpha\ket0+\beta\ket1$ cannot be copied.
+
+<Callout type="idea" title="No-cloning theorem">
+It is impossible to perfectly copy an arbitrary unknown quantum state. Formally: there is no unitary $U$ and fixed "blank" state $\ket{B}$ such that
+
+$$
+U\ket\psi\ket B = \ket\psi\ket\psi \quad\text{for every } \ket\psi.
+$$
+
+(Wootters and Zurek, *Nature* 1982; Dieks, *Physics Letters A* 1982.)
+</Callout>
+
+## The backstory: a faster-than-light telephone
+
+In 1982 Nick Herbert proposed **FLASH**, a "superluminal communicator". The idea: Alice and Bob share entangled photons. Alice chooses which basis to measure her photon in (say, linear or circular polarisation). By steering (Lecture 5), Bob's photon collapses into that basis. Bob then runs his photon through a **laser amplifier** that makes many copies, measures the copies, and works out which basis it was in, learning Alice's choice instantly.
+
+The paper was refereed (Asher Peres reportedly recommended publication *because* finding the flaw would be instructive). The flaw: the copying step. Wootters, Zurek and Dieks showed no device can copy unknown states, so FLASH fails, and relativity is safe.
+
+## The proof, with Schrödinger's cat
+
+The lecture uses three cat states as the qubit basis and a superposition:
+
+- $\ket{A}$: alive, $\ket{D}$: dead (orthogonal, like $\ket0$, $\ket1$);
+- $\ket{H} = \tfrac1{\sqrt2}(\ket A + \ket D)$: the "half" cat (like $\ket+$);
+- $\ket{B}$: the blank state the copy is written onto.
+
+The **cloning machine** (CM) is a unitary $U$, so it is **linear**: $U(ax + by) = aU(x) + bU(y)$.
+
+**Step 1: assume it clones the basis states.**
+
+$$
+U\ket{D}\ket{B} = \ket{D}\ket{D}, \qquad U\ket{A}\ket{B} = \ket{A}\ket{A}.
+$$
+
+**Step 2: what a cloner must do to the half cat.**
+
+$$
+U\ket H\ket B = \ket H\ket H = \tfrac12(\ket A + \ket D)(\ket A + \ket D) = \tfrac12\big(\ket{AA} + \ket{AD} + \ket{DA} + \ket{DD}\big).
+$$
+
+**Step 3: what linearity forces it to do.**
+
+$$
+U\ket H\ket B = U\tfrac1{\sqrt2}(\ket A+\ket D)\ket B = \tfrac1{\sqrt2}U\ket A\ket B + \tfrac1{\sqrt2}U\ket D\ket B = \tfrac1{\sqrt2}\big(\ket{AA} + \ket{DD}\big).
+$$
+
+**Step 4: compare.** Step 3 has no $\ket{AD}$ or $\ket{DA}$ terms and different coefficients, so it is not $\ket H\ket H$. The assumption that a universal cloner exists leads to a contradiction. ∎
+
+<CloneLab />
+
+<Callout type="mistake" title="What the theorem does not say">
+It does **not** say you can never copy anything. You can copy a *known* state (just prepare it again), and you can copy states from a known orthogonal set like $\{\ket0,\ket1\}$ (CNOT does it). The theorem forbids a single machine that copies **every** state, in particular non-orthogonal ones. It also doesn't forbid **imperfect** copies; the best universal cloner has fidelity 5/6 (see Go deeper).
+</Callout>
+
+<LockIn ids={['l7-thm', 'l7-who', 'l7-why', 'l7-basis', 'l7-cnotplus']} />
+
+## Related theorems
+
+- **No-deleting** (Pati & Braunstein 2000): you cannot unitarily turn two copies $\ket\psi\ket\psi$ of an unknown state into $\ket\psi\ket{B}$. The time-reverse of no-cloning, in a sense.
+- **No-broadcasting** (Barnum et al. 1996): the mixed-state generalisation; you cannot spread an unknown state's statistics onto two systems.
+- **No-signalling** (no-communication): measurements on one half of an entangled pair cannot transmit information. No-cloning is one of the walls protecting it: a cloner would make FLASH work.
+
+## Applications
+
+**Error correction.** Classical error correction copies bits ($0\to000$) and takes a majority vote. Quantum codes can't copy, so they **spread** the information into entanglement: $\alpha\ket0+\beta\ket1\to\alpha\ket{000}+\beta\ket{111}$ (this is *not* three copies of the state; check by expanding $\ket\psi^{\otimes3}$). Errors are detected by measuring parities, which reveal the error without revealing α or β.
+
+**Quantum key distribution (QKD), BB84** (Bennett & Brassard 1984): two parties build a shared secret key, then use it to encrypt messages.
+
+1. Alice sends random bits, each encoded in a random basis: 0/1 ($\ket0,\ket1$) or +/− ($\ket+$ = 0, $\ket-$ = 1).
+2. Bob measures each in a random basis of his own.
+3. Publicly they compare **bases** (not bits) and keep only the positions where the bases matched: about half. That is the **sifted key**.
+4. They sacrifice a random sample of key bits to check for errors.
+
+An eavesdropper (Eve) can't copy the qubits to measure later. If she measures in a random basis and resends, she guesses the wrong basis half the time, and then Bob's bit is wrong half of *those* times: about **25% errors** in the checked sample. Alice and Bob see this and abort. Security comes from physics, not from a hard maths problem.
+
+Try it with an eavesdropper in [the BB84 visual](/visuals#bb84).
+
+<LockIn ids={['l7-related', 'l7-bb84']} />
+
+## Worked exercises
+
+<Exercise title="7.1 · The proof with qubits" from="Lecture 7 proof, in 0/1 notation">
+Suppose $U\ket0\ket0 = \ket0\ket0$ and $U\ket1\ket0 = \ket1\ket1$ (a CNOT). Compute $U\ket+\ket0$ and compare with $\ket+\ket+$.
+<Steps>
+1. Linearity: $U\ket+\ket0 = \tfrac1{\sqrt2}(U\ket{00} + U\ket{10}) = \tfrac1{\sqrt2}(\ket{00}+\ket{11})$.
+2. Target: $\ket+\ket+ = \tfrac12(\ket{00}+\ket{01}+\ket{10}+\ket{11})$.
+3. They differ (no $\ket{01}$, $\ket{10}$ terms; amplitudes $\tfrac1{\sqrt2}$ vs $\tfrac12$).
+4. Overlap: $\braket{++}{\Phi^+} = \tfrac12\cdot\tfrac1{\sqrt2}(1 + 1) = \tfrac{1}{\sqrt2}$, so the fidelity is $\tfrac12$.
+</Steps>
+<Answer>$U\ket+\ket0 = \ket{\Phi^+}$, an entangled state, not two copies (fidelity ½ with the target).</Answer>
+</Exercise>
+
+<Exercise title="7.2 · The inner-product proof" from="Extension (Nielsen & Chuang Box 12.1)">
+Show that a cloner for two states $\ket\psi, \ket\phi$ can only exist if they are identical or orthogonal.
+<Steps>
+1. Suppose $U\ket\psi\ket B = \ket\psi\ket\psi$ and $U\ket\phi\ket B = \ket\phi\ket\phi$.
+2. Take the inner product of the two left sides: $\bra\psi\bra B U^\dagger U\ket\phi\ket B = \braket\psi\phi\braket BB = \braket\psi\phi$ (unitaries preserve inner products, $\braket BB = 1$).
+3. Same for the right sides: $\bra\psi\bra\psi\,\ket\phi\ket\phi = \braket\psi\phi^2$.
+4. So $\braket\psi\phi = \braket\psi\phi^2$, i.e. $x = x^2$ with $x = \braket\psi\phi$, giving $x = 0$ or $x = 1$.
+</Steps>
+<Answer>Cloning is possible only for orthogonal ($\braket\psi\phi = 0$) or identical ($\braket\psi\phi = 1$, up to phase) states. $\ket0$ and $\ket+$ have overlap $\tfrac1{\sqrt2}$, so no machine clones both.</Answer>
+</Exercise>
+
+<Exercise title="7.3 · BB84 by hand" from="Lecture 7 application">
+Alice's bits: 1 0 1 1 0 0. Her bases: Z X X Z Z X (Z = 0/1, X = +/−). Bob's bases: Z Z X X Z X. With no eavesdropper, what is the sifted key?
+<Steps>
+1. Compare bases position by position: (Z,Z) ✓, (X,Z) ✗, (X,X) ✓, (Z,X) ✗, (Z,Z) ✓, (X,X) ✓.
+2. Keep positions 1, 3, 5, 6.
+3. In those positions Bob measured in Alice's basis, so he got her bit exactly: 1, 1, 0, 0.
+</Steps>
+<Answer>Sifted key = 1 1 0 0. In the discarded positions Bob's results were random (50/50), which is why they are thrown away.</Answer>
+</Exercise>
+
+<Exercise title="7.4 · Why Eve causes 25% errors" from="Lecture 7 application">
+Eve intercepts each qubit, measures in a random basis, and resends what she found. On the sifted bits, what fraction does Bob get wrong?
+<Steps>
+1. On a sifted bit, Alice and Bob used the same basis. Eve picks that same basis with probability ½: then she reads it correctly and resends the right state, so Bob is correct.
+2. With probability ½ Eve uses the other basis. She resends a state from the wrong basis, e.g. $\ket+$ when Alice sent $\ket0$.
+3. Bob measures in Alice's basis and gets the right bit with probability $|\braket0+|^2 = \tfrac12$.
+4. Error rate $= \tfrac12\times\tfrac12 = \tfrac14$.
+</Steps>
+<Answer>25% of sifted bits are wrong: easy to spot by comparing a sample.</Answer>
+</Exercise>
+
+<Check
+  q="Which of these does the no-cloning theorem forbid?"
+  options={["Making two copies of $\\ket0$", "A machine that copies $\\ket0$, $\\ket1$ and $\\ket+$ perfectly", "Preparing $\\ket+$ twice because you know the recipe", "Making an approximate copy with fidelity 0.8"]}
+  answer={1}
+  explain="$\ket0$ and $\ket+$ are neither orthogonal nor identical (overlap $1/\sqrt2$), so no single unitary can clone both. Known states can be re-prepared, and imperfect copies are allowed."
+/>
+
+<Deeper title="Optimal imperfect cloning" level="MSc">
+Bužek and Hillery (1996) found the best universal $1\to2$ qubit cloner: each copy has fidelity $F = 5/6$ with the input, whatever it is. For $N\to M$ copies, $F = \frac{MN + M + N}{M(N+2)}$ (Gisin & Massar 1997). As $M\to\infty$ this tends to $(N+1)/(N+2)$, the best you can do by measuring $N$ copies and re-preparing. Review: Scarani et al., Rev. Mod. Phys. 77, 1225 (2005).
+</Deeper>
+
+<Deeper title="Security proofs and device independence" level="PhD">
+Real BB84 security must handle any attack Eve could make, including entangling her probe with all the qubits (collective and coherent attacks). Shor and Preskill (2000) gave a clean proof via error-correcting codes: secure if the error rate is below about 11%. Ekert's 1991 protocol (E91) bases security on a **Bell violation** instead (Lecture 8), and leads to device-independent QKD, where you don't even trust your own hardware.
+</Deeper>

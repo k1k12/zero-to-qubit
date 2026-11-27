@@ -1,0 +1,234 @@
+---
+number: 4
+title: Single-qubit operations
+lecturer: Dr Jonte Hance
+blurb: Doing things to qubits. The Pauli gates, Hadamard and the phase gates; why every gate must be unitary; Hermitian operators, eigenstates, and circuit notation.
+minutes: 60
+prereqs: [2, 3]
+objectives:
+  - Apply $I, X, Y, Z, H, S, T$ to any single-qubit state, by matrix or by rule
+  - Multiply Paulis and write products like $XY = iZ$ as scalar × operator
+  - Test whether a matrix is unitary ($U^\dagger U = I$) or Hermitian ($A = A^\dagger$)
+  - Name the eigenstates of each Pauli and the basis it stabilises
+  - Read and draw simple circuits
+sheet:
+  - title: The gates
+    points:
+      - "$X = \\begin{pmatrix}0&1\\\\1&0\\end{pmatrix}$ bit flip; $Z = \\begin{pmatrix}1&0\\\\0&-1\\end{pmatrix}$ phase flip"
+      - "$Y = \\begin{pmatrix}0&-i\\\\i&0\\end{pmatrix}$; $H = \\tfrac1{\\sqrt2}\\begin{pmatrix}1&1\\\\1&-1\\end{pmatrix}$"
+      - "$S = \\mathrm{diag}(1,i)$, $T = \\mathrm{diag}(1,e^{i\\pi/4})$; $T^2 = S$, $S^2 = Z$"
+      - "$H\\ket0 = \\ket+$, $H\\ket1 = \\ket-$, $H(\\alpha\\ket0+\\beta\\ket1) = \\tfrac{\\alpha+\\beta}{\\sqrt2}\\ket0 + \\tfrac{\\alpha-\\beta}{\\sqrt2}\\ket1$"
+  - title: Pauli algebra
+    points:
+      - "$X^2 = Y^2 = Z^2 = I$"
+      - "$XY = iZ$, $YZ = iX$, $ZX = iY$; reversed order gives $-i$"
+      - "Different Paulis anticommute: $XZ = -ZX$"
+      - "$HXH = Z$, $HZH = X$"
+  - title: Eigenstates (stabilised bases)
+    points:
+      - "Z: $\\ket0 (+1)$, $\\ket1 (-1)$ · X: $\\ket+ (+1)$, $\\ket- (-1)$ · Y: $\\ket{i} (+1)$, $\\ket{-i} (-1)$"
+  - title: Valid operations
+    points:
+      - "Unitary $\\iff U^\\dagger U = I \\iff U^{-1} = U^\\dagger$ (preserves norms)"
+      - "Hermitian $\\iff A = A^\\dagger$; real eigenvalues (observables)"
+      - "$A^\\dagger$: transpose then conjugate"
+      - "$|\\det U| = 1$; S and T are unitary but not Hermitian"
+      - "Circuits read left→right; maths applies right→left: $BA\\ket\\psi$"
+---
+import Callout from '../../components/Callout.astro';
+import Check from '../../components/Check.astro';
+import LockIn from '../../components/LockIn.astro';
+import Deeper from '../../components/Deeper.astro';
+import Exercise from '../../components/Exercise.astro';
+import Steps from '../../components/Steps.astro';
+import Answer from '../../components/Answer.astro';
+import Bloch from '../../components/Bloch.astro';
+
+## Operations are matrices
+
+Every quantum operation except measurement is **linear**: doing it to a sum is the sum of doing it to each part. Any linear map on an $n$-dimensional space is an $n\times n$ matrix, and a qubit lives in 2 dimensions, so **single-qubit gates are 2×2 matrices**.
+
+Linearity means you only need to know what a gate does to $\ket0$ and $\ket1$; everything else follows:
+
+$$
+U(\A\alpha\ket0 + \B\beta\ket1) = \A\alpha\,U\ket0 + \B\beta\,U\ket1.
+$$
+
+<Callout type="idea" title="Reading a matrix">
+The **first column** of $U$ is $U\ket0$, the **second column** is $U\ket1$. So you can write down a gate's matrix straight from its action on the basis.
+</Callout>
+
+## The gates
+
+**Identity** $I = \begin{pmatrix}1&0\\0&1\end{pmatrix}$: does nothing.
+
+**Pauli-X** (the quantum NOT): $X = \begin{pmatrix}0&1\\1&0\end{pmatrix}$, so $X\ket0 = \ket1$, $X\ket1 = \ket0$, and $X(\A\alpha\ket0 + \B\beta\ket1) = \B\beta\ket0 + \A\alpha\ket1$: it swaps the amplitudes. Twice is nothing: $X^2 = I$.
+
+**Pauli-Z** (phase flip): $Z = \begin{pmatrix}1&0\\0&-1\end{pmatrix}$, so $Z\ket0 = \ket0$, $Z\ket1 = -\ket1$. It flips the sign of β: $Z\ket+ = \ket-$.
+
+**Pauli-Y**: $Y = \begin{pmatrix}0&-i\\i&0\end{pmatrix}$, so $Y\ket0 = i\ket1$, $Y\ket1 = -i\ket0$. (Note $Y = iXZ$: a bit flip and a phase flip together.)
+
+**Hadamard**: $H = \tfrac1{\sqrt2}\begin{pmatrix}1&1\\1&-1\end{pmatrix}$, so
+
+$$
+H\ket0 = \ket+,\qquad H\ket1 = \ket-,\qquad H(\A\alpha\ket0+\B\beta\ket1) = \tfrac{\A\alpha+\B\beta}{\sqrt2}\ket0 + \tfrac{\A\alpha-\B\beta}{\sqrt2}\ket1.
+$$
+
+H turns a definite basis state into an equal superposition. Measure $H\ket0$ in 0/1 and you get a **true random bit**. H is its own inverse: $H^2 = I$, so $H\ket+ = \ket0$.
+
+**Phase gates**: $S = \begin{pmatrix}1&0\\0&i\end{pmatrix}$ and $T = \begin{pmatrix}1&0\\0&e^{i\pi/4}\end{pmatrix}$. They are "roots" of Z: $S^2 = Z$, $T^2 = S$. They only change the **relative phase**, rotating the Bloch vector around the vertical (Z) axis by 90° and 45°.
+
+<Bloch gates title="Explore · gates as rotations of the Bloch sphere" start="0" notice="Start at |0⟩ and press H, then Z, then H. Where do you end up? Then try S four times from |+⟩. Every gate is a rotation of the sphere: X, Y, Z are half-turns about their axes, H is a half-turn about the diagonal between X and Z, S is a quarter-turn about Z." />
+
+In the [3D Bloch sphere](/visuals#bloch) you can watch each gate rotate the state about its own axis.
+
+<Callout type="mistake" title="Order of operations">
+In a circuit, gates are applied **left to right**. In maths, the matrix nearest the ket acts first. So "first $A$, then $B$" is $BA\ket\psi$, not $AB\ket\psi$. Because matrices rarely commute, this matters: $HZ\ket0 = \ket+$ but $ZH\ket0 = \ket-$.
+</Callout>
+
+<LockIn ids={['l4-x', 'l4-z', 'l4-y', 'l4-h', 'l4-s']} />
+
+## Pauli algebra
+
+Multiply different Paulis and you always get the third one times $\pm i$:
+
+$$
+XY = iZ,\quad YZ = iX,\quad ZX = iY,\qquad YX = -iZ,\quad ZY = -iX,\quad XZ = -iY.
+$$
+
+The rule: going round the cycle $X\to Y\to Z\to X$ in order gives $+i$; against the cycle gives $-i$. Compactly, $\sigma_a\sigma_b = \delta_{ab}I + i\varepsilon_{abc}\sigma_c$, where $\varepsilon_{abc}$ is $+1$ for cyclic order, $-1$ for anticyclic, 0 if any index repeats.
+
+<Callout type="notation" title="The new symbols">
+$\delta_{ab}$ (Kronecker delta) is 1 if $a = b$ and 0 otherwise. $\varepsilon_{abc}$ (Levi-Civita) is $+1$ for $xyz, yzx, zxy$, $-1$ for $xzy, zyx, yxz$. You don't need them for the exam; the "cycle" rule above is enough.
+</Callout>
+
+## Eigenstates: which basis does each Pauli stabilise?
+
+A gate **stabilises** a state if it leaves it unchanged apart from a factor: $U\ket v = \lambda\ket v$. That is exactly "$\ket v$ is an eigenvector".
+
+| Pauli | Eigenstates (eigenvalue) | Basis stabilised |
+|---|---|---|
+| $Z$ | $\ket0$ (+1), $\ket1$ (−1) | 0 or 1 |
+| $X$ | $\ket+$ (+1), $\ket-$ (−1) | + or − |
+| $Y$ | $\ket{i}$ (+1), $\ket{-i}$ (−1) | $i$ or $-i$ |
+
+Every Pauli has eigenvalues exactly $\pm1$. When an operator is used as a **measurement**, the eigenvalues are the possible results and the eigenstates are the only states with a definite result. So "measure Z" means "measure 0 or 1" with results reported as $+1$ / $-1$.
+
+<LockIn ids={['l4-xy', 'l4-stab', 'l4-sq', 'l4-hzh']} />
+
+## Which matrices are allowed? Unitaries
+
+Not every 2×2 matrix is a valid gate. A gate must keep the state normalised, $|\alpha|^2 + |\beta|^2 = 1$, for **every** input. Matrices that preserve the length of every vector are called **unitary**.
+
+<Callout type="idea" title="The test">
+$U$ is unitary **if and only if**
+
+$$
+U^\dagger U = I,
+$$
+
+where $U^\dagger$ (the **adjoint**, "U dagger") is the conjugate transpose: reflect in the diagonal, then conjugate every entry. Equivalently $U^{-1} = U^\dagger$: undoing a gate is just taking its dagger.
+</Callout>
+
+Intuition: unitaries **redistribute** probability between basis states and change phases, but never create or destroy it.
+
+<Callout type="careful" title="A correction to the slides">
+The slides say unitary matrices "must have determinant 1". The correct statement is $|\det U| = 1$: the determinant can be any phase $e^{i\gamma}$. For example $\det Z = -1$ and $\det S = i$, and both are unitary. (Matrices with $\det U = 1$ exactly form the special subgroup SU(2), and any unitary is a global phase times one of those.)
+</Callout>
+
+### Hermitian operators
+
+Some operators equal their own adjoint: $A = A^\dagger$. These are **Hermitian** (self-adjoint). Their eigenvalues are always **real**, which is why measurable quantities (observables) are Hermitian. $X, Y, Z, H$ are Hermitian **and** unitary, so $U^2 = U^\dagger U = I$: they undo themselves.
+
+$S$ and $T$ are unitary but **not** Hermitian: $S^\dagger = \mathrm{diag}(1, -i) \ne S$. So applying S twice does not undo it ($S^2 = Z$); you need $S^\dagger$.
+
+<LockIn ids={['l4-unitary', 'l4-herm', 'l4-dagger']} />
+
+## Universality and circuits
+
+Combining these gates you can rotate the Bloch vector any way you like. For example $H S H$ is a rotation about the X axis. With these single-qubit gates plus **one** two-qubit gate (CNOT, Lecture 6) you can build any quantum computation: the gate set is **universal** (up to arbitrarily good approximation, using $H$ and $T$).
+
+**Circuit notation**: each horizontal line is a qubit, time flows left to right, boxes are gates, and a meter symbol is a measurement (normally in 0/1, since any other basis can be rotated to 0/1 by a gate first: to measure +/−, apply H then measure 0/1).
+
+<Exercise title="4.1 · Verify the Paulis on basis vectors" from="Lecture 4 exercise (a)">
+Verify $X\ket0 = \ket1$, $Y\ket0 = i\ket1$, $Y\ket1 = -i\ket0$ and $Z\ket1 = -\ket1$ by matrix multiplication.
+<Steps>
+1. $X\ket0 = \begin{pmatrix}0&1\\1&0\end{pmatrix}\begin{pmatrix}1\\0\end{pmatrix} = \begin{pmatrix}0\\1\end{pmatrix} = \ket1$.
+2. $Y\ket0 = \begin{pmatrix}0&-i\\i&0\end{pmatrix}\begin{pmatrix}1\\0\end{pmatrix} = \begin{pmatrix}0\\i\end{pmatrix} = i\ket1$. (Just the first column of Y.)
+3. $Y\ket1 = $ second column $= \begin{pmatrix}-i\\0\end{pmatrix} = -i\ket0$.
+4. $Z\ket1 = $ second column of Z $= \begin{pmatrix}0\\-1\end{pmatrix} = -\ket1$.
+</Steps>
+<Answer>All four hold. Shortcut: $U\ket0$ is the first column and $U\ket1$ the second.</Answer>
+</Exercise>
+
+<Exercise title="4.2 · Squares of the Paulis" from="Lecture 4 exercise (b)">
+Compute $Y^2$ and $Z^2$.
+<Steps>
+1. $Y^2 = \begin{pmatrix}0&-i\\i&0\end{pmatrix}\begin{pmatrix}0&-i\\i&0\end{pmatrix}$.
+2. Entry (1,1): $0\cdot0 + (-i)(i) = -i^2 = 1$. Entry (1,2): $0\cdot(-i) + (-i)\cdot0 = 0$.
+3. Entry (2,1): $i\cdot 0 + 0\cdot i = 0$. Entry (2,2): $i(-i) + 0 = 1$. So $Y^2 = I$.
+4. $Z^2 = \mathrm{diag}(1\cdot1, (-1)(-1)) = I$.
+</Steps>
+<Answer>$Y^2 = Z^2 = I$ (and $X^2 = I$).</Answer>
+</Exercise>
+
+<Exercise title="4.3 · Products of two different Paulis" from="Lecture 4 exercise (c) and Quiz 4">
+Write $XY$, $YX$, $ZY$ and $XZ$ in the form (scalar) × (operator).
+<Steps>
+1. $XY = \begin{pmatrix}0&1\\1&0\end{pmatrix}\begin{pmatrix}0&-i\\i&0\end{pmatrix} = \begin{pmatrix}i&0\\0&-i\end{pmatrix} = i\begin{pmatrix}1&0\\0&-1\end{pmatrix} = iZ$.
+2. $YX = \begin{pmatrix}0&-i\\i&0\end{pmatrix}\begin{pmatrix}0&1\\1&0\end{pmatrix} = \begin{pmatrix}-i&0\\0&i\end{pmatrix} = -iZ$.
+3. $ZY$: going $Z\to Y$ is against the cycle $X\to Y\to Z$, so expect $-iX$. Check: $\begin{pmatrix}1&0\\0&-1\end{pmatrix}\begin{pmatrix}0&-i\\i&0\end{pmatrix} = \begin{pmatrix}0&-i\\-i&0\end{pmatrix} = -i\begin{pmatrix}0&1\\1&0\end{pmatrix} = -iX$ ✓.
+4. $XZ = \begin{pmatrix}0&-1\\1&0\end{pmatrix}$. Against the cycle ($X\to Z$), so expect $-iY = -i\begin{pmatrix}0&-i\\i&0\end{pmatrix} = \begin{pmatrix}0&-1\\1&0\end{pmatrix}$ ✓.
+</Steps>
+<Answer>$XY = iZ$, $YX = -iZ$, $ZY = -iX$, $XZ = -iY$. Quiz answers are pairs: the scalar ($\pm i$, or $\pm1$ when a phase cancels) and the operator.</Answer>
+</Exercise>
+
+<Exercise title="4.4 · Hadamard on |1⟩, then measure" from="Lecture 4 Hadamard exercise">
+Find $H\ket1$ and its 0/1 measurement probabilities. Then find $HH\ket0$.
+<Steps>
+1. $H\ket1$ is the second column of $H$: $\tfrac1{\sqrt2}\begin{pmatrix}1\\-1\end{pmatrix} = \ket-$.
+2. $P(0) = |\tfrac1{\sqrt2}|^2 = \tfrac12$, $P(1) = |-\tfrac1{\sqrt2}|^2 = \tfrac12$.
+3. $HH\ket0 = H\ket+ = \tfrac1{\sqrt2}(H\ket0 + H\ket1) = \tfrac1{\sqrt2}(\ket+ + \ket-)$.
+4. $\ket+ + \ket- = \tfrac1{\sqrt2}(\ket0+\ket1+\ket0-\ket1) = \tfrac{2}{\sqrt2}\ket0 = \sqrt2\ket0$, so $HH\ket0 = \ket0$.
+</Steps>
+<Answer>$H\ket1 = \ket-$ (50/50 for 0/1), and $HH\ket0 = \ket0$. The $\ket1$ parts **cancel**: interference, the engine of every quantum algorithm.</Answer>
+</Exercise>
+
+<Exercise title="4.5 · Is it unitary? Is it Hermitian?" from="Quiz 4 style">
+Test $A = \tfrac{1}{\sqrt2}\begin{pmatrix}1&-i\\-i&1\end{pmatrix}$.
+<Steps>
+1. $A^\dagger$: transpose (the matrix is symmetric, so unchanged), then conjugate: $A^\dagger = \tfrac1{\sqrt2}\begin{pmatrix}1&i\\i&1\end{pmatrix}$.
+2. Hermitian? $A^\dagger \ne A$ (the off-diagonals changed sign), so **no**.
+3. Unitary? $A^\dagger A = \tfrac12\begin{pmatrix}1&i\\i&1\end{pmatrix}\begin{pmatrix}1&-i\\-i&1\end{pmatrix}$.
+4. (1,1): $1 + i(-i) = 1 + 1 = 2$. (1,2): $-i + i = 0$. (2,1): $i - i = 0$. (2,2): $i(-i) + 1 = 2$. So $A^\dagger A = \tfrac12\cdot 2I = I$: **yes**.
+</Steps>
+<Answer>Unitary but not Hermitian. (It is $R_x(\pi/2)$, a quarter-turn about the X axis.)</Answer>
+</Exercise>
+
+<Exercise title="4.6 · Conjugating by H" from="Lecture 4: rotations">
+Show $HZH = X$.
+<Steps>
+1. $ZH = \begin{pmatrix}1&0\\0&-1\end{pmatrix}\tfrac1{\sqrt2}\begin{pmatrix}1&1\\1&-1\end{pmatrix} = \tfrac1{\sqrt2}\begin{pmatrix}1&1\\-1&1\end{pmatrix}$.
+2. $H(ZH) = \tfrac12\begin{pmatrix}1&1\\1&-1\end{pmatrix}\begin{pmatrix}1&1\\-1&1\end{pmatrix} = \tfrac12\begin{pmatrix}0&2\\2&0\end{pmatrix} = X$.
+</Steps>
+<Answer>$HZH = X$. H swaps the roles of the Z and X axes; this is why "H, phase gate, H" rotates about X.</Answer>
+</Exercise>
+
+<Check
+  q="Which condition is both necessary and sufficient for an operator to be diagonal?"
+  options={["$A = A^\\dagger$", "$A$ commutes with $Z$, i.e. $AZ = ZA$ (for a 2×2 matrix)", "Its eigenvalues are real", "$A^\\dagger A = I$"]}
+  answer={1}
+  explain={"Write $A = \\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}$. Then $AZ - ZA = \\begin{pmatrix}0&-2b\\\\2c&0\\end{pmatrix}$, which is zero exactly when $b = c = 0$. More generally: a matrix is diagonal in a basis exactly when that basis consists of its eigenvectors, i.e. $A\\ket{k} = \\lambda_k\\ket{k}$ for every basis vector. Check the quiz wording carefully, as it may phrase this as $A = \\sum_k \\lambda_k\\ket k\\bra k$."}
+/>
+
+<Deeper title="Rotations: every gate is exp(−iθ n·σ/2)" level="MSc">
+Any single-qubit unitary is, up to global phase, a rotation $R_{\hat n}(\theta) = e^{-i\theta\,\hat n\cdot\vec\sigma/2} = \cos\tfrac\theta2 I - i\sin\tfrac\theta2(n_xX + n_yY + n_zZ)$, which turns the Bloch vector by $\theta$ about the axis $\hat n$. The identity uses $(\hat n\cdot\vec\sigma)^2 = I$, which follows from the Pauli algebra above. Consequence: $X = iR_x(\pi)$, $H = iR_{(\hat x+\hat z)/\sqrt2}(\pi)$. Any unitary also factors as $e^{i\gamma}R_z(\beta)R_y(\gamma')R_z(\delta)$ (Euler decomposition). Nielsen & Chuang §4.2.
+</Deeper>
+
+<Deeper title="Hamiltonians generate gates" level="MSc">
+Physically, a gate is what Schrödinger evolution does for a time $t$: $U = e^{-iHt/\hbar}$ for a Hermitian Hamiltonian $H$. Hermitian ⇒ $U$ unitary. A spin in a magnetic field along $z$ has $H \propto Z$, so it precesses around the Z axis: that is how hardware implements phase gates. Pulses of microwaves (superconducting qubits) or lasers (trapped ions) implement X and Y rotations.
+</Deeper>
+
+<Deeper title="Solovay–Kitaev and the Clifford+T gate set" level="PhD">
+$\{H, S, \mathrm{CNOT}\}$ generates the **Clifford group**, which by the Gottesman–Knill theorem can be simulated efficiently on a classical computer. Adding $T$ makes the set universal. The Solovay–Kitaev theorem guarantees any single-qubit gate can be approximated to accuracy $\epsilon$ with $O(\log^c(1/\epsilon))$ gates; in fault-tolerant machines T gates are the expensive resource ("magic states"). Dawson & Nielsen, quant-ph/0505030.
+</Deeper>

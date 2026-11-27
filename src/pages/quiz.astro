@@ -1,0 +1,120 @@
+---
+import Base from '../layouts/Base.astro';
+import { QUIZ } from '../data/quiz';
+import { MISTAKES } from '../data/mistakes';
+import { tex } from '../lib/tex';
+
+const data = QUIZ.map((q) => ({ ...q, q: tex(q.q), options: q.options.map(tex), work: tex(q.work) }));
+---
+<Base title="Quiz">
+  <div class="prose" style="max-width:860px">
+    <div class="eyebrow">Practice</div>
+    <h1 id="quiz-title">Mixed practice</h1>
+    <p class="muted" id="quiz-intro">Questions from different lectures, mixed together. Mixing feels harder than doing one topic at a time, but it is what builds exam-ready skill: you have to work out <em>which</em> method each question needs. Lectures you've marked "Not yet" or "Shaky" come up more often.</p>
+    <div class="btn-row no-print">
+      <a class="btn small secondary" href="/quiz">Mixed (8 questions)</a>
+      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => <a class="btn small secondary" href={`/quiz?lecture=${n}`}>L{n}</a>)}
+    </div>
+
+    <section id="quiz" class="card" aria-live="polite" style="margin-top:1rem"></section>
+
+    <h2>Your error log</h2>
+    <p class="muted">Every wrong answer that matches a common slip is counted here. Once a slip has happened twice, questions where it is likely start with a warning.</p>
+    <div id="errlog" class="card"></div>
+  </div>
+  <script type="application/json" id="quiz-data" set:html={JSON.stringify({ data, mistakes: MISTAKES })} />
+</Base>
+<script>
+  import { getErrors, logError, getMastery, save } from '../lib/store';
+  import { LECTURES } from '../data/meta';
+  type Q = { id: string; lecture: number; q: string; options: string[]; answer: number; traps?: Record<string, string>; risks?: string[]; work: string };
+  const { data, mistakes } = JSON.parse(document.getElementById('quiz-data')!.textContent!) as { data: Q[]; mistakes: Record<string, { label: string; alert: string }> };
+  const params = new URLSearchParams(location.search);
+  const lec = Number(params.get('lecture')) || 0;
+  const box = document.getElementById('quiz')!;
+
+  const shuffle = <T,>(a: T[]) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const slugByNum: Record<number, string> = Object.fromEntries(LECTURES.map((l) => [l.n, l.slug]));
+
+  let set: Q[];
+  if (lec) {
+    set = shuffle(data.filter((q) => q.lecture === lec));
+    document.getElementById('quiz-title')!.textContent = `Lecture ${lec} quiz`;
+    document.getElementById('quiz-intro')!.textContent = 'All the questions for this lecture, in random order. For exam practice, switch to Mixed once these feel easy.';
+  } else {
+    // weight lectures by how well you know them, then interleave so no two neighbours share a lecture
+    const mastery = getMastery();
+    const errs = getErrors();
+    const weight = (q: Q) => {
+      const m = mastery[slugByNum[q.lecture]];
+      let w = m === 'solid' ? 1 : m === 'shaky' ? 2.5 : 2;
+      if (q.risks?.some((r) => (errs[r] ?? 0) >= 2)) w += 1.5;
+      return w * Math.random();
+    };
+    const ranked = [...data].sort((a, b) => weight(b) - weight(a));
+    set = [];
+    for (const q of ranked) {
+      if (set.length >= 8) break;
+      if (set.length && set[set.length - 1].lecture === q.lecture) continue;
+      set.push(q);
+    }
+  }
+
+  let i = 0, score = 0, confidentWrong = 0;
+  function render() {
+    if (i >= set.length) {
+      box.innerHTML = `<h3 style="margin-top:0">Done: ${score} / ${set.length}</h3>
+        <p>${confidentWrong ? `<strong>${confidentWrong}</strong> answer(s) you were sure about were wrong. Those are the most valuable ones to review: confident errors stick unless corrected.` : 'No confident mistakes. Nice.'}</p>
+        <div class="btn-row"><a class="btn" href="${location.pathname + location.search}">Another round</a><a class="btn secondary" href="/flashcards">Review flashcards</a></div>`;
+      save('lastQuiz', { at: Date.now(), score, of: set.length });
+      renderLog();
+      return;
+    }
+    const q = set[i];
+    const errs = getErrors();
+    const alerts = (q.risks ?? []).filter((r) => (errs[r] ?? 0) >= 2).map((r) => `<div class="callout mistake" style="margin:0 0 1rem"><div class="callout-title">⚠ Watch out: you've made this slip ${errs[r]} times</div>${mistakes[r].alert}</div>`).join('');
+    box.innerHTML = `
+      <div class="eyebrow">Question ${i + 1} of ${set.length} · Lecture ${q.lecture}</div>
+      ${alerts}
+      <div style="font-size:1.08rem;margin:.6rem 0">${q.q}</div>
+      <div class="check" style="border:0;padding:0;margin:0"><div class="options">${q.options.map((o, k) => `<button class="opt" type="button" data-k="${k}">${String.fromCharCode(65 + k)}. ${o}</button>`).join('')}</div></div>
+      <fieldset style="border:0;padding:0;margin:.6rem 0" class="small"><legend class="muted">How sure are you? (pick before answering, optional)</legend>
+        <label><input type="radio" name="conf" value="guess"> Guessing</label> &nbsp;
+        <label><input type="radio" name="conf" value="fair"> Fairly sure</label> &nbsp;
+        <label><input type="radio" name="conf" value="sure"> Certain</label></fieldset>
+      <div class="feedback" hidden></div>`;
+    box.querySelectorAll<HTMLButtonElement>('.opt').forEach((b) => b.addEventListener('click', () => answer(q, Number(b.dataset.k)), { once: true }));
+    (box.querySelector('.opt') as HTMLElement)?.focus();
+  }
+  function answer(q: Q, k: number) {
+    const right = k === q.answer;
+    const conf = (box.querySelector('input[name="conf"]:checked') as HTMLInputElement | null)?.value;
+    box.querySelectorAll<HTMLButtonElement>('.opt').forEach((b) => { b.disabled = true; const n = Number(b.dataset.k); if (n === q.answer) b.classList.add('right'); else if (n === k) b.classList.add('wrong'); });
+    let extra = '';
+    if (right) score++;
+    else {
+      const tag = q.traps?.[k];
+      if (tag) { logError(tag); extra = `<p class="small"><strong>Logged slip:</strong> ${mistakes[tag].label}.</p>`; }
+      if (conf === 'sure') { confidentWrong++; extra += '<p class="small"><strong>Confident but wrong:</strong> read the working carefully; this is exactly the kind of error worth fixing now.</p>'; }
+    }
+    const fb = box.querySelector<HTMLElement>('.feedback')!;
+    fb.hidden = false;
+    fb.innerHTML = `<p><strong>${right ? 'Correct.' : 'Not quite.'}</strong></p><div class="callout idea" style="margin:.4rem 0"><div class="callout-title">Worked answer</div>${q.work}</div>${extra}
+      <div class="btn-row"><button class="btn next" type="button">${i + 1 < set.length ? 'Next question →' : 'See results'}</button><a class="btn secondary small" href="/lectures/${slugByNum[q.lecture]}">Revisit Lecture ${q.lecture}</a></div>`;
+    fb.querySelector<HTMLButtonElement>('.next')!.addEventListener('click', () => { i++; render(); });
+    fb.querySelector<HTMLButtonElement>('.next')!.focus();
+    renderLog();
+  }
+  function renderLog() {
+    const errs = getErrors();
+    const rows = Object.entries(errs).sort((a, b) => b[1] - a[1]);
+    const el = document.getElementById('errlog')!;
+    el.innerHTML = rows.length
+      ? `<table><thead><tr><th>Slip</th><th>Times</th><th>Remember</th></tr></thead><tbody>${rows.map(([t, n]) => `<tr><td>${mistakes[t]?.label ?? t}</td><td>${n}</td><td class="small">${mistakes[t]?.alert ?? ''}</td></tr>`).join('')}</tbody></table>
+         <button class="btn small secondary" id="clear-log" type="button">Clear the log</button>`
+      : '<p class="muted" style="margin:0">Nothing logged yet.</p>';
+    el.querySelector('#clear-log')?.addEventListener('click', () => { save('errors', {}); renderLog(); });
+  }
+  render();
+  renderLog();
+</script>

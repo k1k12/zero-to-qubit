@@ -1,0 +1,108 @@
+---
+// Lecture 8: CHSH lab. Drag the four measurement directions and see S.
+---
+<div class="lab bell-lab">
+  <div class="eyebrow">Explore · the CHSH Bell test</div>
+  <p class="notice">Alice measures her particle along a₀ or a₁ (purple); Bob along b₀ or b₁ (teal). Drag the handles (or focus one and use ←/→). <strong>Goal:</strong> push |S| above 2, which no local hidden-variable theory can do.</p>
+  <div class="lab-grid">
+    <svg viewBox="-170 -170 340 340" role="application" aria-label="Measurement directions on a circle" style="touch-action:none;background:var(--bg);border-radius:12px;border:1px solid var(--line)">
+      <circle r="120" fill="none" stroke="var(--line)" />
+      <g class="ticks"></g>
+      <g class="handles"></g>
+    </svg>
+    <div>
+      <table>
+        <thead><tr><th>Pair</th><th>Angle between</th><th>E = −cos θ</th><th>Sign in S</th></tr></thead>
+        <tbody class="etable"></tbody>
+      </table>
+      <div class="sline" style="font-size:1.05rem"></div>
+      <div class="gauge" style="margin:.8rem 0"></div>
+      <div class="btn-row">
+        <button class="btn small secondary" data-preset="best" type="button">Best angles</button>
+        <button class="btn small secondary" data-preset="same" type="button">All at 0°</button>
+        <button class="btn small" data-run type="button">Run 4,000 entangled pairs</button>
+      </div>
+      <p class="run small" aria-live="polite"></p>
+    </div>
+  </div>
+  <hr />
+  <div class="eyebrow">Now play the hidden-variable side</div>
+  <p class="small">A local hidden-variable theory means each pair leaves the source carrying fixed answers for every setting. Choose those answers. Can you make γ = A₀B₀ + A₁B₀ + A₀B₁ − A₁B₁ bigger than 2?</p>
+  <div class="btn-row lhv">
+    {['A0', 'A1', 'B0', 'B1'].map((k) => <button class="btn small secondary" type="button" data-k={k}>{k.replace('0', '₀').replace('1', '₁')} = +1</button>)}
+  </div>
+  <p class="gamma" aria-live="polite"></p>
+</div>
+<script>
+  const R = 120;
+  document.querySelectorAll<HTMLElement>('.bell-lab').forEach((root) => {
+    const q = <T,>(s: string) => root.querySelector(s) as T;
+    const ang: Record<string, number> = { a0: 0, a1: 90, b0: 45, b1: -45 };
+    const col: Record<string, string> = { a0: 'var(--alpha)', a1: 'var(--alpha)', b0: 'var(--beta)', b1: 'var(--beta)' };
+    const svg = q<SVGSVGElement>('svg');
+    const ticks = q<SVGGElement>('.ticks');
+    for (let d = 0; d < 360; d += 45) { const t = (d * Math.PI) / 180; ticks.insertAdjacentHTML('beforeend', `<text x="${(R + 22) * Math.cos(t) - 10}" y="${-(R + 22) * Math.sin(t) + 4}" class="svg-muted" font-size="11">${d}°</text>`); }
+    const handles = q<SVGGElement>('.handles');
+    for (const k of Object.keys(ang)) handles.insertAdjacentHTML('beforeend', `<g data-h="${k}"><line x1="0" y1="0" stroke="${col[k]}" stroke-width="3"/><circle r="12" fill="${col[k]}" tabindex="0" style="cursor:grab" aria-label="${k} direction"/><text font-size="12" font-weight="700" fill="#fff" text-anchor="middle" dy="4">${k}</text></g>`);
+    const pairs: [string, string, number][] = [['a0', 'b0', 1], ['a1', 'b0', 1], ['a0', 'b1', 1], ['a1', 'b1', -1]];
+    const E = (x: string, y: string) => -Math.cos(((ang[x] - ang[y]) * Math.PI) / 180);
+    function draw() {
+      handles.querySelectorAll<SVGGElement>('[data-h]').forEach((g) => {
+        const t = (ang[g.dataset.h!] * Math.PI) / 180, x = R * Math.cos(t), y = -R * Math.sin(t);
+        const l = g.querySelector('line')!; l.setAttribute('x2', String(x)); l.setAttribute('y2', String(y));
+        g.querySelector('circle')!.setAttribute('cx', String(x)); g.querySelector('circle')!.setAttribute('cy', String(y));
+        g.querySelector('text')!.setAttribute('x', String(x)); g.querySelector('text')!.setAttribute('y', String(y));
+      });
+      let S = 0;
+      q<HTMLElement>('.etable').innerHTML = pairs.map(([x, y, s]) => {
+        const e = E(x, y); S += s * e;
+        let d = Math.abs(ang[x] - ang[y]) % 360; if (d > 180) d = 360 - d;
+        return `<tr><td>${x}, ${y}</td><td>${d.toFixed(0)}°</td><td>${e >= 0 ? '+' : '−'}${Math.abs(e).toFixed(3)}</td><td>${s > 0 ? '+' : '−'}</td></tr>`;
+      }).join('');
+      const a = Math.abs(S);
+      q<HTMLElement>('.sline').innerHTML = `S = E(a₀,b₀) + E(a₁,b₀) + E(a₀,b₁) − E(a₁,b₁) = <strong>${S.toFixed(3)}</strong> &nbsp; |S| = <strong style="color:${a > 2 + 1e-9 ? 'var(--bad)' : 'var(--text)'}">${a.toFixed(3)}</strong>`;
+      const pct = (v: number) => ((v / 3) * 100).toFixed(1);
+      q<HTMLElement>('.gauge').innerHTML = `<div class="bar" style="height:30px" role="img" aria-label="|S| = ${a.toFixed(2)}; classical limit 2, quantum limit 2.83">
+        <span style="width:${pct(a)}%;background:${a > 2 + 1e-9 ? 'var(--bad)' : 'var(--accent)'}"></span>
+        <i style="position:absolute;left:${pct(2)}%;top:0;bottom:0;border-left:2px solid var(--text)"></i>
+        <i style="position:absolute;left:${pct(2 * Math.SQRT2)}%;top:0;bottom:0;border-left:2px dashed var(--shaky)"></i></div>
+        <div class="small muted" style="position:relative;height:1.2rem"><span style="position:absolute;left:${pct(2)}%;transform:translateX(-50%)">2 (local limit)</span><span style="position:absolute;left:${pct(2 * Math.SQRT2)}%;transform:translateX(-30%)">2√2</span></div>`;
+    }
+    // dragging
+    let active: string | null = null;
+    const local = (e: PointerEvent) => { const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM()!.inverse()); };
+    handles.querySelectorAll<SVGGElement>('[data-h]').forEach((g) => {
+      const c = g.querySelector('circle')!;
+      c.addEventListener('pointerdown', (e) => { active = g.dataset.h!; c.setPointerCapture(e.pointerId); });
+      c.addEventListener('pointermove', (e) => { if (active !== g.dataset.h) return; const p = local(e); ang[active] = Math.round((Math.atan2(-p.y, p.x) * 180) / Math.PI); draw(); });
+      c.addEventListener('pointerup', () => (active = null));
+      c.addEventListener('keydown', (e) => { const k = (e as KeyboardEvent).key; if (k === 'ArrowLeft' || k === 'ArrowUp') ang[g.dataset.h!] += 5; else if (k === 'ArrowRight' || k === 'ArrowDown') ang[g.dataset.h!] -= 5; else return; e.preventDefault(); draw(); });
+    });
+    root.querySelectorAll<HTMLButtonElement>('[data-preset]').forEach((b) => b.addEventListener('click', () => {
+      Object.assign(ang, b.dataset.preset === 'best' ? { a0: 0, a1: 90, b0: 45, b1: -45 } : { a0: 0, a1: 0, b0: 0, b1: 0 }); draw();
+    }));
+    q<HTMLButtonElement>('[data-run]').addEventListener('click', () => {
+      const N = 4000, sums: Record<string, [number, number]> = {};
+      for (let i = 0; i < N; i++) {
+        const [x, y] = pairs[Math.floor(Math.random() * 4)];
+        const pSame = (1 + E(x, y)) / 2; // E = P(same) - P(different)
+        const prod = Math.random() < pSame ? 1 : -1;
+        const key = x + y; sums[key] ??= [0, 0]; sums[key][0] += prod; sums[key][1]++;
+      }
+      let S = 0, v = 0;
+      for (const [x, y, s] of pairs) { const [t, n] = sums[x + y]; const e = t / n; S += s * e; v += (1 - e * e) / n; }
+      q<HTMLElement>('.run').innerHTML = `Simulated experiment: S = <strong>${S.toFixed(3)} ± ${Math.sqrt(v).toFixed(3)}</strong> from ${N} pairs (about ${N / 4} per setting pair). Real experiments get the same kind of number, with noise.`;
+    });
+    // hidden-variable game
+    const hv: Record<string, number> = { A0: 1, A1: 1, B0: 1, B1: 1 };
+    const gamma = () => {
+      const g = hv.A0 * hv.B0 + hv.A1 * hv.B0 + hv.A0 * hv.B1 - hv.A1 * hv.B1;
+      q<HTMLElement>('.gamma').innerHTML = `γ = (${hv.A0})(${hv.B0}) + (${hv.A1})(${hv.B0}) + (${hv.A0})(${hv.B1}) − (${hv.A1})(${hv.B1}) = <strong>${g}</strong>. Rewrite it as A₀(B₀ + B₁) + A₁(B₀ − B₁): one bracket is always 0 and the other ±2, so γ = ±2 for every choice, and the average S can never exceed 2.`;
+    };
+    root.querySelectorAll<HTMLButtonElement>('[data-k]').forEach((b) => b.addEventListener('click', () => {
+      const k = b.dataset.k!; hv[k] *= -1; b.textContent = `${k.replace('0', '₀').replace('1', '₁')} = ${hv[k] > 0 ? '+1' : '−1'}`; gamma();
+    }));
+    gamma();
+    draw();
+  });
+</script>

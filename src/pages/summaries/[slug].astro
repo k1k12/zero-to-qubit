@@ -1,0 +1,27 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { tex } from '../../lib/tex';
+export async function getStaticPaths() {
+  return (await getCollection('lectures')).map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+const { entry } = Astro.props;
+const d = entry.data;
+---
+<Base title={`Summary: Lecture ${d.number}`}>
+  <div class="no-print btn-row" style="justify-content:space-between">
+    <a href={`/lectures/${entry.id}`}>← Back to Lecture {d.number}</a>
+    <button class="btn small" type="button" onclick="window.print()">Print or save as PDF</button>
+  </div>
+  <div class="eyebrow">One-page summary · CSC3132</div>
+  <h1 style="margin-bottom:.2rem">Lecture {d.number}: {d.title}</h1>
+  <p class="muted small" style="margin-top:0">Laid out to fit one A4 page. Good for copying into handwritten notes: rewriting it from memory, then checking, is better than reading it.</p>
+  <div class="summary-sheet grid grid-2">
+    {d.sheet.map((box) => (
+      <section class="card">
+        <h3 style="margin:0 0 .4rem">{box.title}</h3>
+        <ul style="margin:0;padding-left:1.1rem">{box.points.map((p) => <li set:html={tex(p)} />)}</ul>
+      </section>
+    ))}
+  </div>
+</Base>

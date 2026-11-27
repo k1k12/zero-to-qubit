@@ -1,0 +1,40 @@
+---
+import Base from '../layouts/Base.astro';
+import MachZehnder from '../components/MachZehnder.astro';
+import { PHYSICS, MATHS, type Idea } from '../data/ideas';
+import { slugOf } from '../data/meta';
+import { tex } from '../lib/tex';
+import katex from 'katex';
+const md = (s: string) => tex(s).replace(/\[([^\]]+)\]\((https?:[^)]+)\)/g, '<a href="$2" rel="noopener" target="_blank">$1</a>');
+const display = (f: string) => katex.renderToString(f, { displayMode: true, throwOnError: false, macros: { '\\ket': '\\left|#1\\right\\rangle', '\\bra': '\\left\\langle#1\\right|', '\\braket': '\\left\\langle#1\\middle|#2\\right\\rangle' } });
+const sections: [string, string, Idea[]][] = [['physics', 'Physics ideas', PHYSICS], ['maths', 'Maths ideas', MATHS]];
+---
+<Base title="Big ideas">
+  <div class="eyebrow">Go wider</div>
+  <h1>Big ideas behind the module</h1>
+  <p class="muted" style="max-width:780px">The lectures give you the rules. These are the physics experiments and maths structures underneath them: why the rules look the way they do, and where they lead. Each one says which lectures it connects to and how advanced it is.</p>
+  <nav class="btn-row"><a class="btn small secondary" href="#physics">Physics ideas</a><a class="btn small secondary" href="#maths">Maths ideas</a></nav>
+  {sections.map(([id, title, list]) => (
+    <section id={id}>
+      <h2>{title}</h2>
+      <div class="ideas">
+        {list.map((i) => (
+          <article class="card idea">
+            <div style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">
+              <span class="level">{i.level}</span>
+              {i.lectures.map((n) => <a class="pill" href={`/lectures/${slugOf(n)}`}>Lecture {n}</a>)}
+            </div>
+            <h3 style="margin:.5rem 0 .3rem">{i.title}</h3>
+            <p style="margin:.2rem 0" set:html={md(i.body)} />
+            {i.formula && <div set:html={display(i.formula)} />}
+            {i.title.startsWith('The Mach') && <MachZehnder />}
+            {i.next && <p class="small" style="margin-bottom:0"><strong>Next:</strong> <Fragment set:html={i.next.map(([l, u]) => `<a href="${u}" rel="noopener" target="_blank">${l}</a>`).join(' · ')} /></p>}
+          </article>
+        ))}
+      </div>
+    </section>
+  ))}
+</Base>
+<style is:global>
+  .ideas { display: grid; gap: 1rem; max-width: 900px; }
+</style>

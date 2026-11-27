@@ -1,0 +1,152 @@
+---
+number: 1
+title: Quantum computing, a brief overview
+lecturer: Dr Ittoop Puthoor & Dr Jonte Hance
+blurb: What the module covers, where quantum computing came from, what it can and cannot do, and the physics experiments that forced quantum mechanics into existence.
+minutes: 30
+objectives:
+  - Say what is assessed in CSC3132 and how
+  - Bust the five quantum-computing myths from the lecture
+  - Explain why the double-slit and photoelectric experiments needed a new theory
+  - Recognise the wavefunction, Schrödinger evolution, commutators and the uncertainty relation at a high level
+sheet:
+  - title: Module
+    points:
+      - 40% = 10 Canvas problem sets (4% each); 60% = closed-book exam in January
+      - "Syllabus: complex linear algebra, qubits and measurement, single-qubit gates, tensor products, entanglement, EPR and Bell, CNOT, no-cloning, teleportation, hardware"
+      - "Books: Nielsen & Chuang ch. 2; Al-Qasimi & James ch. 1–4"
+  - title: Five myths
+    points:
+      - "NP-complete problems become easy: **false**"
+      - "They can never be built: **false** (cloud machines exist; NISQ era)"
+      - "Just faster hardware like GPUs: **false** (different information, not faster transistors)"
+      - "Hard and needs physics: **kind of true** (it is complex linear algebra, no calculus)"
+      - "Same problems as classical: **true**, the difference is efficiency"
+  - title: The physics that broke classical ideas
+    points:
+      - "Double slit: interference bands, so light is a wave"
+      - "Photoelectric effect: light arrives in lumps (photons)"
+      - "Fix: particles whose *probabilities* come from a wave, the wavefunction $\\psi$"
+      - "$P(a) = |\\psi(a)|^2$; Schrödinger evolution $i\\hbar\\,\\partial_t\\psi = \\hat H\\psi$"
+      - "$[\\hat x,\\hat p] = i\\hbar \\Rightarrow \\Delta x\\,\\Delta p \\ge \\hbar/2$"
+  - title: Timeline to remember
+    points:
+      - "1981 Feynman: simulate nature quantumly · 1985 Deutsch: universal QC"
+      - "1994 Shor (factoring, exponential) · 1996 Grover (search, quadratic)"
+      - "1995–96 Shor and Steane: quantum error correction"
+      - "Today: IBM, Google, Atom Computing machines with ~1000+ qubits"
+---
+import Callout from '../../components/Callout.astro';
+import Check from '../../components/Check.astro';
+import LockIn from '../../components/LockIn.astro';
+import Deeper from '../../components/Deeper.astro';
+
+## The module in one minute
+
+This module teaches the **language of quantum information**: how to describe qubits, change them with gates, measure them, and connect several of them together. Everything rests on one piece of maths, **complex linear algebra** (vectors and matrices whose entries can be complex numbers), which Lecture 2 builds from scratch.
+
+How you are assessed:
+
+| Part | Weight | What |
+|---|---|---|
+| Problem sets | 40% | 10 weekly Canvas exercises, 4% each |
+| Exam | 60% | In person, closed book, January |
+
+<Callout type="idea" title="How to use this site">
+Each lecture page goes in the same order: the idea, the notation, the maths step by step, worked exercises, then quick recall cards. Use the **How much help?** switch above: start on *Full working*, move to *Some* once an exercise type feels familiar, and finish on *Exam mode* before the exam.
+</Callout>
+
+## Myths, busted
+
+The lecture opens with five things people believe about quantum computers.
+
+**Myth 1: they will solve NP-complete problems efficiently.** *Wrong.* NP-complete problems (like the travelling salesman problem) have no known efficient algorithm, classical or quantum, and most researchers expect none exists. Quantum computers speed up *specific* structured problems.
+
+**Myth 2: they are too complicated to ever be built.** *Wrong.* Working (noisy) machines are on the cloud right now: IBM's and others. We are in the **NISQ** era (Noisy Intermediate-Scale Quantum): around a thousand physical qubits, but too noisy for long computations. Fault tolerance needs error correction, which costs many physical qubits per reliable "logical" qubit.
+
+**Myth 3: it is just another fast architecture, like a GPU.** *Wrong.* A GPU uses quantum physics in its transistors but still processes ordinary bits. A quantum computer processes **qubits**, a fundamentally different kind of information with different allowed operations.
+
+**Myth 4: it is hard and you need quantum physics.** *Kind of true.* But the maths is linear algebra with complex numbers: no calculus. Circuit diagrams make it even simpler to read.
+
+**Myth 5: quantum and classical computers solve the same problems.** *True.* Each can simulate the other, so the set of *solvable* problems is identical. The difference is **efficiency**: for some problems (factoring, simulating molecules) the best known quantum algorithm is exponentially faster than the best known classical one.
+
+<Check
+  q="A friend says a quantum computer will instantly crack any hard optimisation problem by trying all answers at once. What is wrong with that?"
+  options={["Nothing, that is how superposition works", "Measurement gives just one random answer; speedups only come from interference designed for specific problem structure", "Quantum computers are slower than classical ones at everything", "It is right, but only for NP-complete problems"]}
+  answer={1}
+  explain="A superposition does hold many possibilities, but measuring it returns one at random. Algorithms like Shor's and Grover's arrange **interference** so wrong answers cancel and right ones reinforce. That only works when the problem has suitable structure, and nobody knows such structure for NP-complete problems."
+/>
+
+## Why physics needed quantum mechanics
+
+### Waves: the double slit
+
+Thomas Young shone light through two narrow slits onto a screen. One slit gives a single bright blob (a bell curve). Two slits do **not** give two blobs; they give alternating bright and dark **bands**. That pattern, **interference**, is what waves do: where two crests meet they add up, where a crest meets a trough they cancel. So light is a wave.
+
+### Particles: the photoelectric effect
+
+Shine light on a metal and electrons can be knocked out. Surprise: below a certain **frequency** (colour), no electrons come out *however bright* the light is. Einstein explained it: light arrives in indivisible lumps, **photons**, each with energy set by its frequency, and an electron can only absorb one lump. So light is also a particle. (This, not relativity, is what Einstein's Nobel Prize was for.)
+
+<Callout type="idea" title="The resolution">
+Treat things as particles (single detection events), but let the **probability** of where they turn up be governed by something that behaves like a wave and can interfere. That something is the **wavefunction**.
+</Callout>
+
+### The wavefunction
+
+<Callout type="notation">
+$\psi$ (Greek "psi") is the wavefunction. For a quantum system, $\psi(a)$ is a complex number for each possible outcome $a$, and the probability of finding outcome $a$ is
+
+$$
+P(a) = |\psi(a)|^2.
+$$
+
+The bars $|\cdot|$ mean "size of" a complex number (Lecture 2). In this module the wavefunction becomes a short list of numbers: the **state vector** of a qubit.
+</Callout>
+
+In 1926 Schrödinger wrote down how an isolated system's wavefunction changes in time:
+
+$$
+i\hbar\frac{\partial \psi}{\partial t} = \hat H \psi.
+$$
+
+You do not need to use this equation. The point: components with different energies (given by the **Hamiltonian** $\hat H$) evolve at different rates and so **interfere**, like waves. In quantum computing we never solve this equation directly; we describe its effect as **gates** (matrices).
+
+### Operators, commutators and uncertainty
+
+Measurable properties (position, momentum, spin…) are represented by **operators**, things that act on the wavefunction. Order matters: measuring position then momentum is not the same as momentum then position. The **commutator** measures how much:
+
+$$
+[\hat A, \hat B] = \hat A\hat B - \hat B\hat A.
+$$
+
+For position and momentum $[\hat x, \hat p] = i\hbar$, which leads to **Heisenberg's uncertainty relation** (1927):
+
+$$
+\Delta x\,\Delta p \ \ge\ \frac{\hbar}{2}.
+$$
+
+You cannot know both to arbitrary precision for the same system.
+
+### Measurement changes things
+
+Von Neumann (1932) formalised measurement: after you measure, you update the wavefunction **by hand** to the state matching the result you saw. So quantum systems evolve in two different ways: smoothly (Schrödinger) when not observed, and by a sudden jump when measured. Lecture 3 turns this into precise rules for qubits.
+
+<LockIn ids={['l1-young', 'l1-photo', 'l1-heis']} />
+
+## From physics to computing
+
+- **1980s.** Benioff, Feynman and Deutsch describe quantum computers. Feynman's point: simulating nature on a classical computer seems exponentially hard, so build the simulator out of quantum parts.
+- **1994.** Peter Shor's factoring algorithm: an exponential speedup over the best known classical algorithm, and a threat to RSA encryption.
+- **1996.** Lov Grover's search algorithm: a quadratic speedup for unstructured search.
+- **1995–96.** Shor and Steane invent quantum error correction, showing noisy qubits can in principle be protected.
+- **Today.** IBM, Google and others run cloud quantum computers; governments invest billions; applications explored include chemistry, materials, drug design, optimisation and machine learning.
+
+<LockIn ids={['l1-np', 'l1-same', 'l1-shor', 'l1-nisq']} />
+
+<Deeper title="What 'exponentially faster' really means" level="Module+">
+Complexity theorists name the problems a quantum computer solves efficiently (with bounded error) **BQP**. Known facts: $\mathrm{P} \subseteq \mathrm{BPP} \subseteq \mathrm{BQP} \subseteq \mathrm{PSPACE}$. Factoring is in BQP (Shor) but is not known to be NP-complete, and it is not proven to be outside P either. So "exponential speedup" always means *over the best known classical algorithm*. Proven separations exist only in restricted models (oracle or query settings, and shallow circuits, e.g. Bravyi, Gosset and König 2018). Good next read: Scott Aaronson, *Quantum Computing Since Democritus* (2013), chapters 10–15.
+</Deeper>
+
+<Deeper title="Interpretations: what is the wavefunction?" level="MSc">
+The lecture defines the wavefunction pragmatically, as "the thing we get probabilities from". Whether it is *real* (ontic) or *knowledge* (epistemic) is an open question: Copenhagen, many-worlds (Everett, which Deutsch championed), Bohmian mechanics, QBism and collapse models all agree on predictions. The 2012 Pusey–Barrett–Rudolph theorem shows that, under reasonable assumptions, the quantum state cannot be purely epistemic. Your lecturer Dr Hance works on quantum foundations, so this is a good office-hours topic.
+</Deeper>

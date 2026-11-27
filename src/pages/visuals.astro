@@ -1,0 +1,65 @@
+---
+import Base from '../layouts/Base.astro';
+import Bloch3D from '../components/Bloch3D.astro';
+import AmplitudeClocks from '../components/AmplitudeClocks.astro';
+import EntanglementGrid from '../components/EntanglementGrid.astro';
+import BellCurve from '../components/BellCurve.astro';
+import TeleportLab from '../components/TeleportLab.astro';
+import BB84Lab from '../components/BB84Lab.astro';
+import ShotsLab from '../components/ShotsLab.astro';
+const items = [
+  ['bloch', 'The Bloch sphere in 3D', 'Lectures 3–4'],
+  ['shots', 'Probability from single clicks', 'Lecture 3'],
+  ['clocks', 'Interference as arrows', 'Lectures 3–4'],
+  ['entangle', 'What entanglement does to each qubit', 'Lectures 5–6'],
+  ['bb84', 'BB84 and the eavesdropper', 'Lecture 7'],
+  ['bell', 'Why Bell correlations are too strong', 'Lecture 8'],
+  ['teleport', 'Teleportation, step by step', 'Lecture 9'],
+];
+---
+<Base title="Visuals">
+  <div class="eyebrow">See it</div>
+  <h1>Visuals for the hard ideas</h1>
+  <p class="muted" style="max-width:780px">The concepts people find hardest, each as a picture you can move. Every visual says what to notice; try to predict what will happen before you press anything.</p>
+  <nav class="btn-row" aria-label="Visuals on this page">
+    {items.map(([id, t, l]) => <a class="btn small secondary" href={`#${id}`}>{t} <span class="small muted">· {l}</span></a>)}
+  </nav>
+
+  <section id="bloch">
+    <h2>The Bloch sphere in 3D</h2>
+    <p class="muted" style="max-width:780px">Every qubit state (ignoring global phase) is a point on this sphere: north pole |0⟩, south pole |1⟩, equator the equal superpositions, and the angle around the equator is the relative phase. Gates turn the sphere; measurements read off a shadow.</p>
+    <Bloch3D />
+  </section>
+
+  <section id="shots">
+    <h2>Probability from single clicks</h2>
+    <ShotsLab />
+  </section>
+
+  <section id="clocks">
+    <h2>Interference as arrows</h2>
+    <p class="muted" style="max-width:780px">Why can two Hadamards give you back exactly |0⟩ when one gives a coin flip? Because amplitudes add like arrows, and arrows can cancel. Probabilities can't.</p>
+    <AmplitudeClocks />
+  </section>
+
+  <section id="entangle">
+    <h2>What entanglement does to each qubit</h2>
+    <p class="muted" style="max-width:780px">"Entangled" means the pair has a definite state but each qubit on its own doesn't. On the Bloch sphere, that shows up as the qubit's arrow shrinking inside the sphere.</p>
+    <EntanglementGrid />
+  </section>
+
+  <section id="bb84">
+    <h2>BB84 and the eavesdropper</h2>
+    <BB84Lab />
+  </section>
+
+  <section id="bell">
+    <h2>Why Bell correlations are too strong</h2>
+    <BellCurve />
+  </section>
+
+  <section id="teleport">
+    <h2>Teleportation, step by step</h2>
+    <TeleportLab />
+  </section>
+</Base>

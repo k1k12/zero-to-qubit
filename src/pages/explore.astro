@@ -1,0 +1,18 @@
+---
+import Base from '../layouts/Base.astro';
+const items = [
+  ['/ideas', '◎', 'Big ideas', 'The physics and maths under each lecture, from spin to SU(2), with an interferometer to play with.'],
+  ['/map', '⌘', 'Concept map', 'How every idea depends on the others, and a study route to any topic.'],
+  ['/notation', '∑', 'Notation decoder', 'Every symbol in plain words. Press / anywhere.'],
+  ['/history', '⌛', 'History', 'From Planck in 1900 to logical qubits, linked to the lectures.'],
+  ['/library', '📚', 'Library', 'Books, papers, courses, videos and a podcast, by level.'],
+  ['/tools', '🧰', 'Tools', 'Simulators, optics labs, real hardware, maths help.'],
+  ['/about', 'ℹ', 'How this site teaches', 'The learning research behind the design.'],
+];
+---
+<Base title="Explore">
+  <div class="eyebrow">Explore</div>
+  <h1>Go further</h1>
+  <p class="muted" style="max-width:720px">Context, reference and reading for when you want more than the lectures.</p>
+  <div class="hub">{items.map(([h, i, t, d]) => <a class="card" href={h}><span class="ico" aria-hidden="true">{i}</span><strong>{t}</strong><span class="small muted">{d}</span></a>)}</div>
+</Base>

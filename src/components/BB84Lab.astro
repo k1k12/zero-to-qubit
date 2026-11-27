@@ -1,0 +1,65 @@
+---
+// BB84 key distribution, photon by photon, with an optional eavesdropper.
+---
+<div class="lab bb84">
+  <div class="eyebrow">Visual · BB84, photon by photon</div>
+  <p class="notice">Alice sends random bits in random bases (<strong>+</strong> = 0/1, <strong>×</strong> = +/−). Bob measures in random bases. Afterwards they compare <em>bases only</em> and keep the matching ones. Switch Eve on: she can't copy the photons (no-cloning), so she has to measure and resend, and about a quarter of the kept bits turn wrong.</p>
+  <div class="btn-row" style="align-items:center">
+    <label class="small"><input type="checkbox" class="eve" /> Eavesdropper (Eve) on the line</label>
+    <button class="btn small" type="button" data-send="12">Send 12 photons</button>
+    <button class="btn small secondary" type="button" data-send="500">Send 500</button>
+    <button class="btn small secondary" type="button" data-reset>Reset</button>
+  </div>
+  <div class="table-wrap" style="overflow-x:auto"></div>
+  <div class="stats"></div>
+</div>
+<script>
+  import { bars } from '../lib/ui';
+  type Row = { a: number; ab: number; e: number | null; eb: number | null; bb: number; b: number };
+  document.querySelectorAll<HTMLElement>('.bb84').forEach((root) => {
+    const q = <T,>(s: string) => root.querySelector(s) as T;
+    let rows: Row[] = [];
+    const rnd = () => (Math.random() < 0.5 ? 0 : 1);
+    const sym = (basis: number, bit: number) => (basis === 0 ? (bit ? '|1⟩' : '|0⟩') : (bit ? '|−⟩' : '|+⟩'));
+    // measuring a state prepared (pb, pbit) in basis mb: same basis → same bit, else random
+    const measure = (pb: number, pbit: number, mb: number) => (pb === mb ? pbit : rnd());
+    function send(n: number) {
+      const eve = q<HTMLInputElement>('.eve').checked;
+      for (let k = 0; k < n; k++) {
+        const a = rnd(), ab = rnd(), bb = rnd();
+        let e: number | null = null, eb: number | null = null, pb = ab, pbit = a;
+        if (eve) { eb = rnd(); e = measure(ab, a, eb); pb = eb; pbit = e; }
+        rows.push({ a, ab, e, eb, bb, b: measure(pb, pbit, bb) });
+      }
+      draw();
+    }
+    function draw() {
+      const show = rows.slice(-12);
+      const base = (b: number) => (b === 0 ? '+' : '×');
+      const cells = (f: (r: Row) => string) => show.map((r) => `<td style="text-align:center">${f(r)}</td>`).join('');
+      q<HTMLElement>('.table-wrap').innerHTML = rows.length ? `<table class="small" style="min-width:640px">
+        <tr><th>Alice's bit</th>${cells((r) => String(r.a))}</tr>
+        <tr><th>Alice's basis</th>${cells((r) => base(r.ab))}</tr>
+        <tr><th>Photon sent</th>${cells((r) => sym(r.ab, r.a))}</tr>
+        ${rows.some((r) => r.eb !== null) ? `<tr><th>Eve's basis</th>${cells((r) => (r.eb === null ? '' : `<span style="color:var(--bad)">${base(r.eb)}</span>`))}</tr>` : ''}
+        <tr><th>Bob's basis</th>${cells((r) => base(r.bb))}</tr>
+        <tr><th>Bob's bit</th>${cells((r) => String(r.b))}</tr>
+        <tr><th>Keep?</th>${cells((r) => (r.ab === r.bb ? (r.a === r.b ? '<span style="color:var(--good)">✓ keep</span>' : '<strong style="color:var(--bad)">✗ error</strong>') : '<span class="muted">discard</span>'))}</tr>
+      </table><p class="small muted">Showing the last ${show.length} of ${rows.length} photons.</p>` : '<p class="small muted">Press Send.</p>';
+      const kept = rows.filter((r) => r.ab === r.bb);
+      const errs = kept.filter((r) => r.a !== r.b).length;
+      const rate = kept.length ? errs / kept.length : 0;
+      q<HTMLElement>('.stats').innerHTML = rows.length ? '' : '';
+      if (rows.length) {
+        bars(q<HTMLElement>('.stats'), [
+          { label: `Kept after comparing bases: ${kept.length} of ${rows.length}`, p: kept.length / rows.length, colour: 'var(--accent)', note: 'expected ≈ 50%' },
+          { label: `Errors in the kept key: ${errs}`, p: rate, colour: rate > 0.11 ? 'var(--bad)' : 'var(--good)', note: rate > 0.11 ? 'too high: someone is listening, abort' : 'safe' },
+        ]);
+      }
+    }
+    root.querySelectorAll<HTMLButtonElement>('[data-send]').forEach((b) => b.addEventListener('click', () => send(+b.dataset.send!)));
+    q<HTMLButtonElement>('[data-reset]').addEventListener('click', () => { rows = []; draw(); });
+    q<HTMLInputElement>('.eve').addEventListener('change', () => { rows = []; draw(); });
+    draw();
+  });
+</script>

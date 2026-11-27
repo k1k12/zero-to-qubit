@@ -1,0 +1,41 @@
+---
+import Base from '../layouts/Base.astro';
+import { HISTORY } from '../data/history';
+import { slugOf } from '../data/meta';
+import { tex } from '../lib/tex';
+const colour = { physics: 'var(--alpha)', computing: 'var(--beta)', experiment: 'var(--shaky)', theory: 'var(--bad)' };
+---
+<Base title="History">
+  <div class="eyebrow">Context</div>
+  <h1>A short history of quantum information</h1>
+  <p class="muted" style="max-width:760px">Ideas make more sense when you know which problem they solved. Each event links to the lecture where it shows up. Colours: <span style="color:var(--alpha)">physics</span>, <span style="color:var(--bad)">theory</span>, <span style="color:var(--shaky)">experiment</span>, <span style="color:var(--beta)">computing</span>.</p>
+  <div class="btn-row" role="group" aria-label="Filter">
+    {['all', 'physics', 'theory', 'experiment', 'computing'].map((k) => <button class="btn small secondary" type="button" data-f={k}>{k[0].toUpperCase() + k.slice(1)}</button>)}
+  </div>
+  <ol class="timeline">
+    {HISTORY.map((e) => (
+      <li data-kind={e.kind} style={`--c:${colour[e.kind]}`}>
+        <div class="yr">{e.year}</div>
+        <div class="card">
+          <strong>{e.title}</strong>
+          <p style="margin:.3rem 0" set:html={tex(e.text)} />
+          {e.lecture && <a class="small" href={`/lectures/${slugOf(e.lecture)}`}>Lecture {e.lecture} →</a>}
+        </div>
+      </li>
+    ))}
+  </ol>
+</Base>
+<style is:global>
+  .timeline { list-style: none; padding: 0; margin: 1.5rem 0; position: relative; max-width: 860px; }
+  .timeline::before { content: ''; position: absolute; left: 5.2rem; top: 0; bottom: 0; border-left: 2px solid var(--line); }
+  .timeline li { display: grid; grid-template-columns: 4.6rem 1fr; gap: 1.6rem; margin: 0 0 1rem; position: relative; }
+  .timeline li::before { content: ''; position: absolute; left: calc(5.2rem - 6px); top: 1.1rem; width: 12px; height: 12px; border-radius: 50%; background: var(--c); }
+  .timeline .yr { font-weight: 700; text-align: right; padding-top: .8rem; color: var(--c); }
+  .timeline .card { border-left: 3px solid var(--c); }
+</style>
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-f]').forEach((b) => b.addEventListener('click', () => {
+    const f = b.dataset.f!;
+    document.querySelectorAll<HTMLElement>('.timeline li').forEach((li) => (li.hidden = f !== 'all' && li.dataset.kind !== f));
+  }));
+</script>

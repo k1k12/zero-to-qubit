@@ -1,0 +1,9 @@
+---
+// Optional extension material. Levels: "Module+" (just past the syllabus), "MSc", "PhD".
+interface Props { title: string; level?: 'Module+' | 'MSc' | 'PhD' }
+const { title, level = 'MSc' } = Astro.props;
+---
+<details class="callout deeper">
+  <summary>↧ Go deeper: {title} <span class="level">{level}</span></summary>
+  <slot />
+</details>

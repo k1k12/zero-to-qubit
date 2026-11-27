@@ -1,0 +1,112 @@
+---
+import Base from '../layouts/Base.astro';
+import { LECTURES } from '../data/meta';
+
+// Concept graph: which ideas each idea depends on.
+const nodes = [
+  { id: 'complex', label: 'Complex numbers', tier: 0, lecture: 2, needs: [] },
+  { id: 'kets', label: 'Vectors & kets', tier: 0, lecture: 2, needs: [] },
+  { id: 'matrices', label: 'Matrices', tier: 0, lecture: 2, needs: ['kets'] },
+  { id: 'eigen', label: 'Eigenvectors', tier: 0, lecture: 2, needs: ['matrices'] },
+  { id: 'qubit', label: 'The qubit', tier: 1, lecture: 3, needs: ['complex', 'kets'] },
+  { id: 'measure', label: 'Measurement (Born rule)', tier: 1, lecture: 3, needs: ['qubit', 'kets'] },
+  { id: 'phase', label: 'Phase & Bloch sphere', tier: 1, lecture: 3, needs: ['complex', 'qubit'] },
+  { id: 'gates', label: 'Single-qubit gates', tier: 1, lecture: 4, needs: ['matrices', 'qubit'] },
+  { id: 'unitary', label: 'Unitary & Hermitian', tier: 1, lecture: 4, needs: ['matrices', 'gates'] },
+  { id: 'pauli', label: 'Pauli eigenstates', tier: 1, lecture: 4, needs: ['eigen', 'gates', 'phase'] },
+  { id: 'tensor', label: 'Tensor products', tier: 2, lecture: 5, needs: ['kets', 'qubit'] },
+  { id: 'ent', label: 'Entanglement', tier: 2, lecture: 5, needs: ['tensor', 'measure'] },
+  { id: 'cnot', label: 'CNOT & 2-qubit gates', tier: 2, lecture: 6, needs: ['tensor', 'gates'] },
+  { id: 'bellstates', label: 'Bell states', tier: 2, lecture: 6, needs: ['cnot', 'ent'] },
+  { id: 'epr', label: 'EPR argument', tier: 3, lecture: 5, needs: ['ent'] },
+  { id: 'clone', label: 'No-cloning', tier: 3, lecture: 7, needs: ['unitary', 'cnot'] },
+  { id: 'bb84', label: 'BB84 key distribution', tier: 3, lecture: 7, needs: ['clone', 'measure'] },
+  { id: 'bell', label: "Bell's theorem (CHSH)", tier: 3, lecture: 8, needs: ['bellstates', 'epr', 'pauli'] },
+  { id: 'tele', label: 'Teleportation', tier: 3, lecture: 9, needs: ['bellstates', 'clone', 'pauli', 'measure'] },
+];
+const tiers = ['Maths', 'One qubit', 'Many qubits', 'Big results'];
+const W = 1100, colW = W / 4, boxW = 200, boxH = 44;
+const pos: Record<string, { x: number; y: number }> = {};
+tiers.forEach((_, t) => {
+  const col = nodes.filter((n) => n.tier === t);
+  col.forEach((n, i) => (pos[n.id] = { x: t * colW + (colW - boxW) / 2, y: 70 + i * 78 }));
+});
+const H = 70 + 6 * 78 + 20;
+const slug = Object.fromEntries(LECTURES.map((l) => [l.n, l.slug]));
+---
+<Base title="Concept map">
+  <div class="eyebrow">See the whole module</div>
+  <h1>Concept map</h1>
+  <p class="muted" style="max-width:780px">Arrows point from an idea to the ideas that need it. Colours show how well you know each lecture (<span style="color:var(--good)">solid</span>, <span style="color:var(--shaky)">shaky</span>, <span style="color:var(--bad)">not yet</span>; set it at the top of a lecture). Pick a topic to get a study route through what it depends on.</p>
+  <div class="map-layout">
+    <div class="card" style="overflow-x:auto;padding:.6rem">
+      <svg viewBox={`0 0 ${W} ${H}`} style="min-width:820px;width:100%" role="group" aria-label="Concept map">
+        <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--muted)" /></marker></defs>
+        {tiers.map((t, i) => <text x={i * colW + colW / 2} y="30" text-anchor="middle" class="svg-muted" font-size="14" font-weight="600">{t.toUpperCase()}</text>)}
+        <g class="edges">
+          {nodes.flatMap((n) => n.needs.map((m) => {
+            const a = pos[m], b = pos[n.id];
+            const x1 = a.x + boxW, y1 = a.y + boxH / 2, x2 = b.x, y2 = b.y + boxH / 2;
+            const same = nodes.find((k) => k.id === m)!.tier === n.tier;
+            const d = same ? `M${a.x + boxW / 2},${a.y + boxH} C${a.x + boxW / 2 + 40},${(a.y + b.y) / 2 + boxH / 2} ${b.x + boxW / 2 + 40},${(a.y + b.y) / 2 + boxH / 2} ${b.x + boxW / 2},${b.y}` : `M${x1},${y1} C${x1 + 50},${y1} ${x2 - 50},${y2} ${x2},${y2}`;
+            return <path d={d} data-from={m} data-to={n.id} fill="none" stroke="var(--line)" stroke-width="1.5" marker-end="url(#arr)" />;
+          }))}
+        </g>
+        {nodes.map((n) => (
+          <g class="node" data-id={n.id} data-lecture={n.lecture} tabindex="0" role="button" aria-label={`${n.label}, lecture ${n.lecture}`} style="cursor:pointer">
+            <rect x={pos[n.id].x} y={pos[n.id].y} width={boxW} height={boxH} rx="10" fill="var(--bg-2)" stroke="var(--line)" stroke-width="2" />
+            <text x={pos[n.id].x + 12} y={pos[n.id].y + 20} class="svg-text" font-size="13" font-weight="600">{n.label}</text>
+            <text x={pos[n.id].x + 12} y={pos[n.id].y + 35} class="svg-muted" font-size="11">Lecture {n.lecture}</text>
+          </g>
+        ))}
+      </svg>
+    </div>
+    <aside class="card" id="detail" aria-live="polite">
+      <div class="eyebrow">Selected</div>
+      <p class="muted">Click or tab to a topic.</p>
+    </aside>
+  </div>
+  <script type="application/json" id="map-data" set:html={JSON.stringify({ nodes, slug })} />
+</Base>
+<style is:global>
+  .map-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 1rem; align-items: start; margin-top: 1rem; }
+  @media (max-width: 960px) { .map-layout { grid-template-columns: 1fr; } }
+  .node:focus-visible rect, .node.sel rect { stroke: var(--focus); stroke-width: 3; }
+  path.hl { stroke: var(--accent); stroke-width: 2.5; }
+</style>
+<script>
+  import { getMastery } from '../lib/store';
+  type N = { id: string; label: string; lecture: number; needs: string[] };
+  const { nodes, slug } = JSON.parse(document.getElementById('map-data')!.textContent!) as { nodes: N[]; slug: Record<string, string> };
+  const m = getMastery();
+  const level = (n: N) => m[slug[n.lecture]] ?? 'none';
+  const col = (l: string) => (l === 'solid' ? 'var(--good)' : l === 'shaky' ? 'var(--shaky)' : 'var(--bad)');
+  document.querySelectorAll<SVGGElement>('.node').forEach((g) => {
+    const n = nodes.find((k) => k.id === g.dataset.id)!;
+    const r = g.querySelector('rect')!;
+    r.setAttribute('stroke', col(level(n)));
+    r.setAttribute('fill', `color-mix(in srgb, ${col(level(n))} 12%, var(--bg-2))`);
+    const pick = () => select(n, g);
+    g.addEventListener('click', pick);
+    g.addEventListener('keydown', (e) => { if ((e as KeyboardEvent).key === 'Enter' || (e as KeyboardEvent).key === ' ') { e.preventDefault(); pick(); } });
+  });
+  function ancestors(id: string, seen = new Set<string>()): string[] {
+    const n = nodes.find((k) => k.id === id)!;
+    const out: string[] = [];
+    for (const p of n.needs) if (!seen.has(p)) { seen.add(p); out.push(...ancestors(p, seen), p); }
+    return out;
+  }
+  function select(n: N, g: SVGGElement) {
+    document.querySelectorAll('.node').forEach((x) => x.classList.remove('sel')); g.classList.add('sel');
+    const anc = ancestors(n.id);
+    const set = new Set([...anc, n.id]);
+    document.querySelectorAll<SVGPathElement>('.edges path').forEach((p) => p.classList.toggle('hl', set.has(p.dataset.from!) && set.has(p.dataset.to!)));
+    const todo = anc.map((id) => nodes.find((k) => k.id === id)!).filter((k) => level(k) !== 'solid');
+    const lbl = (k: N) => `<a href="/lectures/${slug[k.lecture]}">${k.label}</a> <span class="pill ${level(k) === 'shaky' ? 'shaky' : 'bad'}">L${k.lecture}</span>`;
+    document.getElementById('detail')!.innerHTML = `<div class="eyebrow">Selected</div><h3 style="margin:.3rem 0">${n.label}</h3>
+      <p class="small">Lecture ${n.lecture} · you rated it <strong style="color:${col(level(n))}">${level(n) === 'none' ? 'not yet' : level(n)}</strong></p>
+      <div class="eyebrow">Builds directly on</div><p class="small">${n.needs.length ? n.needs.map((id) => nodes.find((k) => k.id === id)!.label).join(', ') : 'Nothing: a starting point.'}</p>
+      <div class="eyebrow">Suggested route</div>
+      ${todo.length ? `<ol class="small" style="padding-left:1.2rem">${todo.map((k) => `<li>${lbl(k)}</li>`).join('')}<li><strong>${n.label}</strong></li></ol><p class="small muted">Skips anything you've marked solid.</p>` : `<p class="small">Everything it depends on is marked solid. Go straight to <a href="/lectures/${slug[n.lecture]}">Lecture ${n.lecture}</a>.</p>`}`;
+  }
+</script>

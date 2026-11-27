@@ -1,0 +1,37 @@
+---
+import Base from '../layouts/Base.astro';
+import { LIBRARY } from '../data/library';
+const levels = ['Module', "Master's", 'PhD'] as const;
+const blurb = { Module: 'Start here: matches the assessed content.', "Master's": 'Original papers and graduate notes. Read after the matching lecture.', PhD: 'Research reviews and frontier results.' };
+---
+<Base title="Library">
+  <div class="eyebrow">Read, watch, listen</div>
+  <h1>Library</h1>
+  <p class="muted" style="max-width:760px">Hand-picked, by level. Paper links go through their DOI, so they stay valid; many are free via the university library (sign in with your Newcastle account if a publisher asks). Filter by lecture to see what goes with what you're studying.</p>
+  <label class="small">Show items for: <select id="lec" style="width:auto;display:inline-block">
+    <option value="0">All lectures</option>
+    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => <option value={n}>Lecture {n}</option>)}
+  </select></label>
+  {levels.map((lv) => (
+    <section>
+      <h2>{lv} level <span class="small muted" style="font-weight:400">· {blurb[lv]}</span></h2>
+      <div class="grid grid-2">
+        {LIBRARY.filter((i) => i.level === lv).map((i) => (
+          <article class="card item" data-lec={i.lectures.join(',')}>
+            <div style="display:flex;justify-content:space-between;gap:.5rem"><span class="pill">{i.kind}</span><span class="small muted">L{i.lectures.join(', L')}</span></div>
+            <h3 style="margin:.5rem 0 .2rem;font-size:1.02rem"><a href={i.url} rel="noopener" target="_blank">{i.title}</a></h3>
+            <div class="small muted">{i.who}</div>
+            <p class="small" style="margin:.5rem 0 0">{i.why}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  ))}
+  <p class="small muted" style="margin-top:2rem">Spotted a broken link? Edit <code>src/data/library.ts</code> in the repo.</p>
+</Base>
+<script>
+  const sel = document.getElementById('lec') as HTMLSelectElement;
+  sel.addEventListener('change', () => {
+    document.querySelectorAll<HTMLElement>('.item').forEach((el) => { el.hidden = sel.value !== '0' && !el.dataset.lec!.split(',').includes(sel.value); });
+  });
+</script>
