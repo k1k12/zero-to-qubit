@@ -2,9 +2,8 @@
 import Base from '../layouts/Base.astro';
 ---
 <Base title="Code lab">
-  <div class="eyebrow">Practice · quantum programming</div>
   <h1>Code lab</h1>
-  <p class="muted" style="max-width:820px">Write real Qiskit (Python) or OpenQASM 3 and run it on a simulator inside your browser. Each exercise has tests, like Microsoft's Quantum Katas, and the tutor recognises common wrong answers and tells you what went wrong. Everything you type is saved in this browser.</p>
+  <p class="muted" style="max-width:820px">Write actual Qiskit (Python) or OpenQASM 3 and run it on a little simulator in the browser. Each exercise has tests (like Microsoft's Quantum Katas), and if you get one of the usual wrong answers it tells you what probably happened. Your code is saved in your browser.</p>
 
   <div class="lab-layout">
     <nav class="card" aria-label="Exercises">
@@ -187,7 +186,7 @@ print(job.result()[0].data.meas.get_counts())</code></pre></li>
     if (ok && !passed[ex.id]) { passed[ex.id] = true; save('codePassed', passed); list(); }
     const d = !ok ? ex.diagnose?.(st, parsed.ops) : null;
     if (d) { logError('code:' + ex.id); }
-    $('tutor').innerHTML = d ? `<div class="callout mistake" style="margin:0"><div class="callout-title">⚠ I think I see what happened</div>${d}</div>` : ok ? '<p>Nice work.</p>' : results.length ? '<p class="small">Not there yet. Compare the final state with what the exercise asks for, or take a hint.</p>' : '';
+    $('tutor').innerHTML = d ? `<div class="callout mistake" style="margin:0"><div class="callout-title">What probably went wrong</div>${d}</div>` : ok ? '<p>That works.</p>' : results.length ? '<p class="small">Not there yet. Compare the final state with what the exercise asks for, or take a hint.</p>' : '';
   }
 
   document.querySelectorAll<HTMLButtonElement>('[data-lang]').forEach((b) => b.addEventListener('click', () => setLang(b.dataset.lang as 'qiskit' | 'qasm')));

@@ -6,7 +6,7 @@ interface Props { q: string; options: string[]; answer: number; explain: string;
 const { q, options, answer, explain, mode = 'check', tag } = Astro.props;
 ---
 <div class="check" data-answer={answer} data-mode={mode} data-tag={tag}>
-  <div class="eyebrow">{mode === 'predict' ? 'Predict first: guess before reading on' : 'Check yourself'}</div>
+  <div class="eyebrow">{mode === 'predict' ? 'Guess first (before reading on)' : 'Quick check'}</div>
   <p set:html={tex(q)} />
   <div class="options" role="group">
     {options.map((o, i) => <button type="button" class="opt" data-i={i} set:html={`${String.fromCharCode(65 + i)}. ${tex(o)}`} />)}
@@ -25,8 +25,8 @@ const { q, options, answer, explain, mode = 'check', tag } = Astro.props;
       b.classList.add(i === answer ? 'right' : 'wrong');
       box.querySelector(`.opt[data-i="${answer}"]`)!.classList.add('right');
       const verdict = box.dataset.mode === 'predict'
-        ? (i === answer ? '<strong>Good prediction.</strong> ' : '<strong>Interesting guess, and wrong guesses still help you remember.</strong> ')
-        : (i === answer ? '<strong>Correct.</strong> ' : '<strong>Not quite.</strong> ');
+        ? (i === answer ? '<strong>Yep.</strong> ' : '<strong>Not quite, but guessing first still helps it stick.</strong> ')
+        : (i === answer ? '<strong>Right.</strong> ' : '<strong>Not quite.</strong> ');
       if (i !== answer && box.dataset.tag && box.dataset.mode !== 'predict') logError(box.dataset.tag);
       fb.innerHTML = verdict + (fb.dataset.base ??= fb.innerHTML);
       fb.hidden = false;

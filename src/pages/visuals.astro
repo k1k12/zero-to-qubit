@@ -18,9 +18,8 @@ const items = [
 ];
 ---
 <Base title="Visuals">
-  <div class="eyebrow">See it</div>
-  <h1>Visuals for the hard ideas</h1>
-  <p class="muted" style="max-width:780px">The concepts people find hardest, each as a picture you can move. Every visual says what to notice; try to predict what will happen before you press anything.</p>
+  <h1>Visuals</h1>
+  <p class="muted" style="max-width:780px">The bits I found hardest to picture, as diagrams you can actually move. Worth guessing what'll happen before you press anything.</p>
   <nav class="btn-row" aria-label="Visuals on this page">
     {items.map(([id, t, l]) => <a class="btn small secondary" href={`#${id}`}>{t} <span class="small muted">· {l}</span></a>)}
   </nav>

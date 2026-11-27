@@ -35,9 +35,8 @@ const H = 70 + 6 * 78 + 20;
 const slug = Object.fromEntries(LECTURES.map((l) => [l.n, l.slug]));
 ---
 <Base title="Concept map">
-  <div class="eyebrow">See the whole module</div>
   <h1>Concept map</h1>
-  <p class="muted" style="max-width:780px">Arrows point from an idea to the ideas that need it. Colours show how well you know each lecture (<span style="color:var(--good)">solid</span>, <span style="color:var(--shaky)">shaky</span>, <span style="color:var(--bad)">not yet</span>; set it at the top of a lecture). Pick a topic to get a study route through what it depends on.</p>
+  <p class="muted" style="max-width:780px">Arrows go from an idea to the ideas that need it. Colours show how well you know each lecture (<span style="color:var(--good)">solid</span>, <span style="color:var(--shaky)">shaky</span>, <span style="color:var(--bad)">not yet</span>; set it at the top of a lecture). Pick a topic to get a study route through what it depends on.</p>
   <div class="map-layout">
     <div class="card" style="overflow-x:auto;padding:.6rem">
       <svg viewBox={`0 0 ${W} ${H}`} style="min-width:820px;width:100%" role="group" aria-label="Concept map">
@@ -63,7 +62,7 @@ const slug = Object.fromEntries(LECTURES.map((l) => [l.n, l.slug]));
     </div>
     <aside class="card" id="detail" aria-live="polite">
       <div class="eyebrow">Selected</div>
-      <p class="muted">Click or tab to a topic.</p>
+      <p class="muted">Click a topic.</p>
     </aside>
   </div>
   <script type="application/json" id="map-data" set:html={JSON.stringify({ nodes, slug })} />
@@ -105,8 +104,8 @@ const slug = Object.fromEntries(LECTURES.map((l) => [l.n, l.slug]));
     const lbl = (k: N) => `<a href="/lectures/${slug[k.lecture]}">${k.label}</a> <span class="pill ${level(k) === 'shaky' ? 'shaky' : 'bad'}">L${k.lecture}</span>`;
     document.getElementById('detail')!.innerHTML = `<div class="eyebrow">Selected</div><h3 style="margin:.3rem 0">${n.label}</h3>
       <p class="small">Lecture ${n.lecture} · you rated it <strong style="color:${col(level(n))}">${level(n) === 'none' ? 'not yet' : level(n)}</strong></p>
-      <div class="eyebrow">Builds directly on</div><p class="small">${n.needs.length ? n.needs.map((id) => nodes.find((k) => k.id === id)!.label).join(', ') : 'Nothing: a starting point.'}</p>
-      <div class="eyebrow">Suggested route</div>
+      <div class="eyebrow">Needs</div><p class="small">${n.needs.length ? n.needs.map((id) => nodes.find((k) => k.id === id)!.label).join(', ') : 'Nothing: a starting point.'}</p>
+      <div class="eyebrow">What to go over first</div>
       ${todo.length ? `<ol class="small" style="padding-left:1.2rem">${todo.map((k) => `<li>${lbl(k)}</li>`).join('')}<li><strong>${n.label}</strong></li></ol><p class="small muted">Skips anything you've marked solid.</p>` : `<p class="small">Everything it depends on is marked solid. Go straight to <a href="/lectures/${slug[n.lecture]}">Lecture ${n.lecture}</a>.</p>`}`;
   }
 </script>

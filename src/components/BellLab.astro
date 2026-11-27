@@ -2,8 +2,8 @@
 // Lecture 8: CHSH lab. Drag the four measurement directions and see S.
 ---
 <div class="lab bell-lab">
-  <div class="eyebrow">Explore · the CHSH Bell test</div>
-  <p class="notice">Alice measures her particle along a₀ or a₁ (purple); Bob along b₀ or b₁ (teal). Drag the handles (or focus one and use ←/→). <strong>Goal:</strong> push |S| above 2, which no local hidden-variable theory can do.</p>
+  <div class="eyebrow">Try it: the CHSH Bell test</div>
+  <p class="notice">Alice measures her particle along a₀ or a₁ (purple); Bob along b₀ or b₁ (teal). Drag the handles (or focus one and use ←/→). <strong>The aim:</strong> push |S| above 2, which no local hidden-variable theory can do.</p>
   <div class="lab-grid">
     <svg viewBox="-170 -170 340 340" role="application" aria-label="Measurement directions on a circle" style="touch-action:none;background:var(--bg);border-radius:12px;border:1px solid var(--line)">
       <circle r="120" fill="none" stroke="var(--line)" />
@@ -26,7 +26,7 @@
     </div>
   </div>
   <hr />
-  <div class="eyebrow">Now play the hidden-variable side</div>
+  <div class="eyebrow">Your turn to be the hidden variables</div>
   <p class="small">A local hidden-variable theory means each pair leaves the source carrying fixed answers for every setting. Choose those answers. Can you make γ = A₀B₀ + A₁B₀ + A₀B₁ − A₁B₁ bigger than 2?</p>
   <div class="btn-row lhv">
     {['A0', 'A1', 'B0', 'B1'].map((k) => <button class="btn small secondary" type="button" data-k={k}>{k.replace('0', '₀').replace('1', '₁')} = +1</button>)}

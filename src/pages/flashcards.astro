@@ -6,9 +6,8 @@ import { tex } from '../lib/tex';
 const data = CARDS.map((c) => ({ id: c.id, lecture: c.lecture, q: tex(c.q), a: tex(c.a) }));
 ---
 <Base title="Flashcards">
-  <div class="eyebrow">Practice</div>
   <h1>Flashcards</h1>
-  <p class="muted" style="max-width:760px">Say the answer in your head (or type it), then reveal and be honest: <strong>Forgot</strong> or <strong>Remembered</strong>. The scheduler (FSRS, the algorithm modern Anki uses) brings each card back just before you'd forget it, so a few minutes a day beats a long cram.</p>
+  <p class="muted" style="max-width:760px">Say the answer in your head (or type it), then flip it and be honest: <strong>Forgot</strong> or <strong>Remembered</strong>. The scheduler (FSRS, the algorithm modern Anki uses) brings each card back just before you'd forget it, so a few minutes a day beats a long cram.</p>
 
   <div class="grid" style="grid-template-columns:minmax(0,260px) minmax(0,1fr);gap:1.5rem;align-items:start" id="fc-layout">
     <aside class="card">

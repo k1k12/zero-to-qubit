@@ -8,9 +8,8 @@ const data = QUIZ.map((q) => ({ ...q, q: tex(q.q), options: q.options.map(tex), 
 ---
 <Base title="Quiz">
   <div class="prose" style="max-width:860px">
-    <div class="eyebrow">Practice</div>
     <h1 id="quiz-title">Mixed practice</h1>
-    <p class="muted" id="quiz-intro">Questions from different lectures, mixed together. Mixing feels harder than doing one topic at a time, but it is what builds exam-ready skill: you have to work out <em>which</em> method each question needs. Lectures you've marked "Not yet" or "Shaky" come up more often.</p>
+    <p class="muted" id="quiz-intro">Questions from different lectures, mixed up. It feels harder than doing one topic at a time, but that's the point: in the exam you have to work out <em>which</em> method a question needs. Lectures you've marked as not started or shaky come up more.</p>
     <div class="btn-row no-print">
       <a class="btn small secondary" href="/quiz">Mixed (8 questions)</a>
       {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => <a class="btn small secondary" href={`/quiz?lecture=${n}`}>L{n}</a>)}
@@ -19,7 +18,7 @@ const data = QUIZ.map((q) => ({ ...q, q: tex(q.q), options: q.options.map(tex), 
     <section id="quiz" class="card" aria-live="polite" style="margin-top:1rem"></section>
 
     <h2>Your error log</h2>
-    <p class="muted">Every wrong answer that matches a common slip is counted here. Once a slip has happened twice, questions where it is likely start with a warning.</p>
+    <p class="muted">Wrong answers that match a common slip get counted here. Once you've made the same slip twice, you get a warning before questions where it's likely.</p>
     <div id="errlog" class="card"></div>
   </div>
   <script type="application/json" id="quiz-data" set:html={JSON.stringify({ data, mistakes: MISTAKES })} />

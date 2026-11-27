@@ -6,9 +6,8 @@ import { tex } from '../lib/tex';
 const colour = { physics: 'var(--alpha)', computing: 'var(--beta)', experiment: 'var(--shaky)', theory: 'var(--bad)' };
 ---
 <Base title="History">
-  <div class="eyebrow">Context</div>
-  <h1>A short history of quantum information</h1>
-  <p class="muted" style="max-width:760px">Ideas make more sense when you know which problem they solved. Each event links to the lecture where it shows up. Colours: <span style="color:var(--alpha)">physics</span>, <span style="color:var(--bad)">theory</span>, <span style="color:var(--shaky)">experiment</span>, <span style="color:var(--beta)">computing</span>.</p>
+  <h1>History</h1>
+  <p class="muted" style="max-width:760px">I found the ideas made more sense once I knew what problem each one was solving, so here's the timeline. Each event links to the lecture it turns up in. Colours: <span style="color:var(--alpha)">physics</span>, <span style="color:var(--bad)">theory</span>, <span style="color:var(--shaky)">experiment</span>, <span style="color:var(--beta)">computing</span>.</p>
   <div class="btn-row" role="group" aria-label="Filter">
     {['all', 'physics', 'theory', 'experiment', 'computing'].map((k) => <button class="btn small secondary" type="button" data-f={k}>{k[0].toUpperCase() + k.slice(1)}</button>)}
   </div>

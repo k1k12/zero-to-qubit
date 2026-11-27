@@ -13,9 +13,9 @@ const d = entry.data;
     <a href={`/lectures/${entry.id}`}>← Back to Lecture {d.number}</a>
     <button class="btn small" type="button" onclick="window.print()">Print or save as PDF</button>
   </div>
-  <div class="eyebrow">One-page summary · CSC3132</div>
+  <div class="eyebrow">CSC3132 one-page summary</div>
   <h1 style="margin-bottom:.2rem">Lecture {d.number}: {d.title}</h1>
-  <p class="muted small" style="margin-top:0">Laid out to fit one A4 page. Good for copying into handwritten notes: rewriting it from memory, then checking, is better than reading it.</p>
+  <p class="muted small" style="margin-top:0">Fits on one A4 page. I get more out of trying to write it out from memory and then checking than just reading it.</p>
   <div class="summary-sheet grid grid-2">
     {d.sheet.map((box) => (
       <section class="card">

@@ -1,9 +1,10 @@
 ---
-// Optional extension material. Levels: "Module+" (just past the syllabus), "MSc", "PhD".
+// Optional extra material past the syllabus. Levels: "Module+" (a bit beyond), "MSc", "PhD".
 interface Props { title: string; level?: 'Module+' | 'MSc' | 'PhD' }
 const { title, level = 'MSc' } = Astro.props;
+const names = { 'Module+': 'a bit beyond the module', MSc: "master's level", PhD: 'PhD level' };
 ---
 <details class="callout deeper">
-  <summary>↧ Go deeper: {title} <span class="level">{level}</span></summary>
+  <summary>Extra: {title} <span class="level">{names[level]}</span></summary>
   <slot />
 </details>
