@@ -2,7 +2,7 @@
 number: 9
 title: Quantum teleportation
 lecturer: Dr Ittoop Puthoor
-blurb: Moving an unknown qubit from Alice to Bob using one shared entangled pair and two ordinary bits. The circuit, the full derivation, Bob's four corrections, and why it neither clones nor beats light.
+blurb: "Getting an unknown qubit from Alice to Bob using one shared entangled pair and two normal bits. The circuit, the full derivation, Bob's four corrections, and why it doesn't break no-cloning or relativity. Another one I missed, so it's written up from the slides with extra working."
 minutes: 70
 prereqs: [5, 6, 7]
 objectives:
@@ -40,7 +40,7 @@ import Steps from '../../components/Steps.astro';
 import Answer from '../../components/Answer.astro';
 import TeleportLab from '../../components/TeleportLab.astro';
 
-## The idea in 60 seconds
+## The short version
 
 Alice has a qubit in some state $\ket\psi = \A\alpha\ket0 + \B\beta\ket1$ that **she doesn't know**. She wants Bob, far away, to end up with that exact state. She can't measure it to find α and β (one measurement gives one random bit and destroys the rest), and she can't copy it (Lecture 7). She can't even send the qubit itself if there is no quantum channel.
 
@@ -112,7 +112,7 @@ $$
 \ket{\psi_3} = \tfrac12\Big[\ket{00}(\A\alpha\ket0 + \B\beta\ket1) + \ket{01}(\A\alpha\ket1 + \B\beta\ket0) + \ket{10}(\A\alpha\ket0 - \B\beta\ket1) + \ket{11}(\A\alpha\ket1 - \B\beta\ket0)\Big].
 $$
 
-This is the heart of the protocol: the lecture's "first, second, third and fourth terms". Nothing has been measured, yet in each term Bob's qubit (the bracket) is $\ket\psi$ with at most an X and/or a Z applied.
+This is the key step, and it's what the slides mean by the "first, second, third and fourth terms". Nothing has been measured, yet in each term Bob's qubit (the bracket) is $\ket\psi$ with at most an X and/or a Z applied.
 
 ### Step 4: Alice measures; Bob corrects
 
@@ -180,7 +180,7 @@ Expand step 3 into its eight terms and regroup. Show the $\ket{10}$ term.
 Suppose the shared pair is $\ket{\Psi^+} = \tfrac1{\sqrt2}(\ket{01}+\ket{10})$ instead of $\ket{\Phi^+}$. What should Bob do if Alice gets 00?
 <Steps>
 1. $\ket{\Psi^+} = (I\otimes X)\ket{\Phi^+}$: it is $\ket{\Phi^+}$ with an extra X on Bob's qubit.
-2. X on Bob's qubit commutes with everything Alice does (different qubits), so it simply stays there to the end.
+2. X on Bob's qubit commutes with everything Alice does (different qubits), so it just stays there until the end.
 3. With result 00 the usual protocol would leave Bob with $\ket\psi$; now he has $X\ket\psi = \beta\ket0 + \alpha\ket1$.
 </Steps>
 <Answer>Apply X. In general, with $\ket{\Psi^+}$ Bob's correction is the usual one followed by an extra X (up to a global phase).</Answer>

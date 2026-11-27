@@ -2,7 +2,7 @@
 number: 7
 title: The no-cloning theorem
 lecturer: Dr Ittoop Puthoor
-blurb: Why nobody can photocopy an unknown quantum state. The story behind it (a faster-than-light telegraph that didn't work), the proof by linearity with Schrödinger's cat, related theorems, and how it makes quantum cryptography (BB84) secure.
+blurb: "Why you can't copy an unknown quantum state. There's a good story behind it (a faster-than-light telephone that didn't work), then the proof using Schrödinger's cat, some related theorems, and how it makes BB84 key distribution secure. I missed this lecture, so these notes come from the slides and the reading."
 minutes: 50
 prereqs: [4, 6]
 objectives:
@@ -38,7 +38,7 @@ import Steps from '../../components/Steps.astro';
 import Answer from '../../components/Answer.astro';
 import CloneLab from '../../components/CloneLab.astro';
 
-## Copying is everywhere, except here
+## Copying is easy, normally
 
 Digital files copy perfectly; DNA copies itself. Classically, copying a bit is trivial: $0\to000$, $1\to111$. You can even copy the quantum **basis states**: $\ket0\to\ket{000}$, $\ket1\to\ket{111}$. But an **arbitrary, unknown** state $\ket\psi = \alpha\ket0+\beta\ket1$ cannot be copied.
 
