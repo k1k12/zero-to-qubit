@@ -20,6 +20,13 @@ It's a static site built with [Astro](https://astro.build). There's no server an
 | `/notation` | Every symbol in plain words (press `/` anywhere) |
 | `/history`, `/library`, `/tools` | Timeline, reading list by level, curated tools |
 
+## How I work on it
+
+- `main` is what's live. I don't commit to it directly.
+- Every change goes on its own branch (`feature/...`, `fix/...`, `content/...`, `ci/...`) and is merged with a pull request.
+- GitHub Actions runs the tests and a full build on every pull request, so a broken build can't reach the live site.
+- Releases are tagged (`v1.0.0`, `v1.1.0`, ...) and listed in [CHANGELOG.md](CHANGELOG.md).
+
 ## Running it locally
 
 You need Node.js 22.23.4 or newer.
