@@ -2,7 +2,7 @@
 number: 4
 title: Single-qubit operations
 lecturer: Dr Jonte Hance
-blurb: Doing things to qubits. The Pauli gates, Hadamard and the phase gates; why every gate must be unitary; Hermitian operators, eigenstates, and circuit notation.
+blurb: "Doing things to one qubit: the Pauli gates, Hadamard and the phase gates, why every gate has to be unitary, Hermitian operators and eigenstates, and how to read circuit diagrams."
 minutes: 60
 prereqs: [2, 3]
 objectives:
@@ -191,7 +191,7 @@ Find $H\ket1$ and its 0/1 measurement probabilities. Then find $HH\ket0$.
 3. $HH\ket0 = H\ket+ = \tfrac1{\sqrt2}(H\ket0 + H\ket1) = \tfrac1{\sqrt2}(\ket+ + \ket-)$.
 4. $\ket+ + \ket- = \tfrac1{\sqrt2}(\ket0+\ket1+\ket0-\ket1) = \tfrac{2}{\sqrt2}\ket0 = \sqrt2\ket0$, so $HH\ket0 = \ket0$.
 </Steps>
-<Answer>$H\ket1 = \ket-$ (50/50 for 0/1), and $HH\ket0 = \ket0$. The $\ket1$ parts **cancel**: interference, the engine of every quantum algorithm.</Answer>
+<Answer>$H\ket1 = \ket-$ (50/50 for 0/1), and $HH\ket0 = \ket0$. The $\ket1$ parts **cancel**. That's interference, and pretty much every quantum algorithm relies on it.</Answer>
 </Exercise>
 
 <Exercise title="4.5 · Is it unitary? Is it Hermitian?" from="Quiz 4 style">

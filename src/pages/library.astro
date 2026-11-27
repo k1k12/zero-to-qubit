@@ -5,9 +5,8 @@ const levels = ['Module', "Master's", 'PhD'] as const;
 const blurb = { Module: 'Start here: matches the assessed content.', "Master's": 'Original papers and graduate notes. Read after the matching lecture.', PhD: 'Research reviews and frontier results.' };
 ---
 <Base title="Library">
-  <div class="eyebrow">Read, watch, listen</div>
-  <h1>Library</h1>
-  <p class="muted" style="max-width:760px">Hand-picked, by level. Paper links go through their DOI, so they stay valid; many are free via the university library (sign in with your Newcastle account if a publisher asks). Filter by lecture to see what goes with what you're studying.</p>
+  <h1>Reading list</h1>
+  <p class="muted" style="max-width:760px">Things I've found useful or that kept getting recommended, sorted by level. Paper links go through the DOI, and most are free through the university library if you sign in with your Newcastle account. You can filter by lecture.</p>
   <label class="small">Show items for: <select id="lec" style="width:auto;display:inline-block">
     <option value="0">All lectures</option>
     {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => <option value={n}>Lecture {n}</option>)}

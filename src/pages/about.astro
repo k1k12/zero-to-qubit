@@ -1,24 +1,23 @@
 ---
 import Base from '../layouts/Base.astro';
 ---
-<Base title="How this site teaches" wide={false}>
-  <div class="eyebrow">About</div>
-  <h1>How this site teaches</h1>
-  <p>Every feature here is based on evidence about how people learn hard technical material.</p>
-  <h2>Practice testing and spacing</h2>
-  <p>Dunlosky et al.'s review of ten study techniques (<em>Psychological Science in the Public Interest</em>, 2013) rated <strong>practice testing</strong> and <strong>distributed practice</strong> highest, and rereading and highlighting low. Hence the flashcards, the check questions inside every lecture, and the scheduler that spaces reviews out.</p>
-  <h2>FSRS scheduling</h2>
-  <p>Cards are scheduled with FSRS (Free Spaced Repetition Scheduler), the algorithm now built into Anki, trained on hundreds of millions of real reviews. Two buttons only, Forgot and Remembered, because honest yes/no grading is faster and just as effective.</p>
-  <h2>Interleaving</h2>
-  <p>Mixing problem types forces you to pick the right method, which is what exams test. In Rohrer and colleagues' classroom studies, interleaved practice gave much higher test scores than blocked practice (in one study 72% vs 38%). The mixed quiz is built this way.</p>
-  <h2>Pretesting ("predict first")</h2>
-  <p>Trying to answer before you're taught improves learning even when your guess is wrong, as long as you see the answer afterwards (meta-analyses find moderate effects, around g ≈ 0.5).</p>
-  <h2>Self-explanation and fading worked examples</h2>
-  <p>Explaining steps in your own words is one of the strongest techniques (Bisra et al. 2018, g ≈ 0.55). Fully worked examples help beginners most and help less as you improve (the expertise-reversal effect), so the Guidance switch fades the working: Full → Some → Exam mode.</p>
-  <h2>Pictures next to words, with signals</h2>
-  <p>Mayer's multimedia principles: put words next to the picture they describe, and highlight what matters. Hence α in purple and β in teal everywhere, and every interactive saying what to notice.</p>
-  <h2>Embedded review: the mnemonic medium</h2>
-  <p>Andy Matuschak and Michael Nielsen's <a href="https://quantum.country">Quantum Country</a> puts spaced-repetition questions inside an explanatory essay. The "Lock it in" cards copy that idea.</p>
-  <h2>Explorables and katas</h2>
-  <p>Interactive simulations work best with light guidance (the PhET team's "implicit scaffolding"; Bret Victor's explorable explanations). Coding practice uses unit tests with instant feedback, like Microsoft's Quantum Katas.</p>
+<Base title="About" wide={false}>
+  <h1>About this site</h1>
+  <p>I'm a final-year student at Newcastle taking CSC3132. I missed Lectures 7 and 9, half-understood Lecture 8, and realised my notes for the earlier ones were mostly copied slides that I couldn't actually use. So I rewrote the whole module properly, starting from zero, and turned it into a website so I could use it on my phone and play with the diagrams.</p>
+  <p>It's not official and it's not a replacement for the lectures. If something here disagrees with the slides, the slides are right.</p>
+
+  <h2>Why it's set up the way it is</h2>
+  <p>Before building it I read a bit about how people actually learn this kind of thing, because "read the slides again" clearly wasn't working for me. The short version:</p>
+  <ul>
+    <li><strong>Testing yourself beats rereading.</strong> A big review of study techniques (Dunlosky et al., 2013) found practice testing and spacing your revision out worked best, and rereading and highlighting barely helped. That's why there are flashcards, quick checks in every lecture and a quiz.</li>
+    <li><strong>Spacing.</strong> The flashcards use FSRS, the scheduler that Anki now uses. It brings a card back just before you'd forget it. There are only two buttons (Forgot / Remembered) because I kept overthinking the four-button version.</li>
+    <li><strong>Mixing topics.</strong> Doing questions from different lectures mixed together feels worse but works better, because you have to choose the method each time. In one classroom study, mixed practice scored 72% vs 38% for doing one topic at a time (Rohrer and colleagues).</li>
+    <li><strong>Guessing first.</strong> Having a go at a question before you've been taught it helps you remember the answer afterwards, even when the guess is wrong. That's the "Guess first" boxes.</li>
+    <li><strong>Explaining it yourself.</strong> Writing out why each step works is one of the more effective things you can do (Bisra et al., 2018). Worked examples help most at the start and less once you know it, which is why the exercises have a switch to hide the working.</li>
+    <li><strong>Pictures next to the maths.</strong> α is always purple and β always teal, in the equations and in the diagrams, so you can follow them through.</li>
+    <li><strong>Recall cards inside the notes.</strong> I stole this idea from <a href="https://quantum.country">Quantum Country</a> by Andy Matuschak and Michael Nielsen, which puts spaced-repetition questions in the middle of the explanation.</li>
+  </ul>
+
+  <h2>How it's built</h2>
+  <p>It's a static site made with <a href="https://astro.build">Astro</a>, hosted on Cloudflare Pages. The diagrams are plain SVG and TypeScript, the maths is KaTeX, and the code lab runs on a small state-vector simulator I can test with <code>npm test</code>. Nothing is sent anywhere: your progress lives in your own browser.</p>
 </Base>

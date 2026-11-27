@@ -2,7 +2,7 @@
 // Bloch sphere explorer. Sliders set θ and φ; gate buttons rotate the state.
 // Shows the state with alpha in purple and beta in teal, plus measurement probabilities.
 interface Props { gates?: boolean; title?: string; start?: string; notice?: string }
-const { gates = false, title = 'Explore · the Bloch sphere', start = '+', notice = 'Move θ to tip the arrow from the north pole (|0⟩) to the south pole (|1⟩). Move φ and notice that the 0/1 probabilities do not change at all: φ is the relative phase, which only shows up in other measurements (like +/−).' } = Astro.props;
+const { gates = false, title = 'Try it: the Bloch sphere', start = '+', notice = 'Move θ to tip the arrow from the north pole (|0⟩) to the south pole (|1⟩). Move φ and notice that the 0/1 probabilities do not change at all: φ is the relative phase, which only shows up in other measurements (like +/−).' } = Astro.props;
 ---
 <div class="lab bloch-lab" data-gates={gates ? '1' : ''} data-start={start}>
   <div class="eyebrow">{title}</div>

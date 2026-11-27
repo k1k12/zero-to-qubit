@@ -4,16 +4,15 @@ import Base from '../../layouts/Base.astro';
 const lectures = (await getCollection('lectures')).sort((a, b) => a.data.number - b.data.number);
 ---
 <Base title="All lectures">
-  <div class="eyebrow">Learn</div>
-  <h1>All lectures, in order</h1>
-  <p class="muted" style="max-width:760px">Each lecture builds on the ones before it. The coloured label is how well <em>you</em> said you know it; change it at the top of each lecture page.</p>
+  <h1>Lectures</h1>
+  <p class="muted" style="max-width:760px">In order, because each one builds on the last. The label is how well you've said you know it (change it at the top of each lecture).</p>
   <div class="grid grid-3" style="margin-top:1.4rem">
     {lectures.map((l) => (
       <a class="card lec-card" id={`l${l.data.number}`} href={`/lectures/${l.id}`} data-slug={l.id} style="text-decoration:none;color:var(--text);display:flex;flex-direction:column;gap:.4rem">
-        <div style="display:flex;justify-content:space-between;align-items:center"><span class="eyebrow">Lecture {l.data.number}</span><span class="pill mastery">Not yet</span></div>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span class="eyebrow">Lecture {l.data.number}</span><span class="pill mastery">not started</span></div>
         <strong style="font-size:1.08rem">{l.data.title}</strong>
         <span class="small muted">{l.data.blurb}</span>
-        <span class="small muted" style="margin-top:auto">≈ {l.data.minutes} min · <span>One-page summary available</span></span>
+        <span class="small muted" style="margin-top:auto">≈ {l.data.minutes} min · <span>one-page summary</span></span>
       </a>
     ))}
   </div>
@@ -28,7 +27,7 @@ const lectures = (await getCollection('lectures')).sort((a, b) => a.data.number 
   document.querySelectorAll<HTMLElement>('.lec-card').forEach((c) => {
     const v = m[c.dataset.slug!] ?? 'none';
     const p = c.querySelector('.mastery')!;
-    p.textContent = v === 'solid' ? 'Solid' : v === 'shaky' ? 'Shaky' : 'Not yet';
-    p.className = `pill mastery ${v === 'solid' ? 'good' : v === 'shaky' ? 'shaky' : 'bad'}`;
+    p.textContent = v === 'solid' ? 'got it' : v === 'shaky' ? 'shaky' : 'not started';
+    p.className = `pill mastery ${v === 'solid' ? 'good' : v === 'shaky' ? 'shaky' : ''}`;
   });
 </script>

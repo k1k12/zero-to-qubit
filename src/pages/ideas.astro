@@ -10,9 +10,8 @@ const display = (f: string) => katex.renderToString(f, { displayMode: true, thro
 const sections: [string, string, Idea[]][] = [['physics', 'Physics ideas', PHYSICS], ['maths', 'Maths ideas', MATHS]];
 ---
 <Base title="Big ideas">
-  <div class="eyebrow">Go wider</div>
-  <h1>Big ideas behind the module</h1>
-  <p class="muted" style="max-width:780px">The lectures give you the rules. These are the physics experiments and maths structures underneath them: why the rules look the way they do, and where they lead. Each one says which lectures it connects to and how advanced it is.</p>
+  <h1>Big ideas</h1>
+  <p class="muted" style="max-width:780px">The lectures give you the rules. This page is the physics and maths underneath them: why the rules look like they do, and where they lead. Each one says which lectures it links to and roughly how advanced it is.</p>
   <nav class="btn-row"><a class="btn small secondary" href="#physics">Physics ideas</a><a class="btn small secondary" href="#maths">Maths ideas</a></nav>
   {sections.map(([id, title, list]) => (
     <section id={id}>

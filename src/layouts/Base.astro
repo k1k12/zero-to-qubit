@@ -1,9 +1,13 @@
 ---
 import 'katex/dist/katex.min.css';
+import '@fontsource/source-serif-4/400.css';
+import '@fontsource/source-serif-4/600.css';
+import '@fontsource/source-serif-4/700.css';
+import '@fontsource/caveat/700.css';
 import '../styles/global.css';
 
 interface Props { title: string; description?: string; wide?: boolean }
-const { title, description = 'Learn CSC3132 Introduction to Quantum Computing, lecture by lecture, with visuals, worked exercises and practice.', wide = true } = Astro.props;
+const { title, description = 'My notes for CSC3132 Introduction to Quantum Computing at Newcastle: every lecture, worked exercises, visuals and practice questions.', wide = true } = Astro.props;
 const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 const nav: [string, string, string[]][] = [
   ['/lectures', 'Learn', ['/lectures', '/summaries']],
@@ -33,8 +37,8 @@ const nav: [string, string, string[]][] = [
     (function () {
       var d = document.documentElement;
       function get(k, f) { try { var v = localStorage.getItem('qn:' + k); return v === null ? f : JSON.parse(v); } catch (e) { return f; } }
-      var prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
-      d.dataset.theme = get('theme', prefersLight ? 'light' : 'dark');
+      var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      d.dataset.theme = get('theme', prefersDark ? 'dark' : 'light');
       d.dataset.largeText = String(get('largeText', false));
       d.dataset.reduceMotion = String(get('reduceMotion', window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches));
       d.dataset.guidance = get('guidance', 'full');
@@ -61,7 +65,7 @@ const nav: [string, string, string[]][] = [
     </div>
     <div class="settings-panel" id="settings-panel" hidden>
       <div class="eyebrow">Display</div>
-      <label><input type="checkbox" id="set-light" /> Light theme</label>
+      <label><input type="checkbox" id="set-light" /> Dark theme</label>
       <label><input type="checkbox" id="set-large" /> Larger text</label>
       <label><input type="checkbox" id="set-motion" /> Reduce motion</label>
       <p class="small muted" style="margin:.6rem 0 0">Keyboard: <kbd>/</kbd> notation search · <kbd>?</kbd> shortcuts on practice pages. Settings are saved in this browser.</p>
@@ -74,8 +78,8 @@ const nav: [string, string, string[]][] = [
   </main>
   <footer class="site-footer">
     <div class="wrap">
-      <p>A study companion for Newcastle University's CSC3132 Introduction to Quantum Computing. Written to explain the lectures, not to replace them: if something here disagrees with your lecturers, they win (and tell me).</p>
-      <p><a href="/accessibility">Accessibility</a> · <a href="/about">How this site teaches</a> · <a href="/explore">Everything else</a> · Progress is stored only in your browser.</p>
+      <p>My revision notes for CSC3132 (Intro to Quantum Computing) at Newcastle. They're not official, so if anything here disagrees with the lecture slides, trust the slides and let me know.</p>
+      <p><a href="/about">About</a> · <a href="/accessibility">Accessibility</a> · Your progress is only saved in your own browser.</p>
     </div>
   </footer>
   <script>
@@ -98,10 +102,10 @@ const nav: [string, string, string[]][] = [
     const light = document.getElementById('set-light') as HTMLInputElement;
     const large = document.getElementById('set-large') as HTMLInputElement;
     const motion = document.getElementById('set-motion') as HTMLInputElement;
-    light.checked = d.dataset.theme === 'light';
+    light.checked = d.dataset.theme === 'dark';
     large.checked = d.dataset.largeText === 'true';
     motion.checked = d.dataset.reduceMotion === 'true';
-    light.addEventListener('change', () => { d.dataset.theme = light.checked ? 'light' : 'dark'; save('theme', d.dataset.theme); });
+    light.addEventListener('change', () => { d.dataset.theme = light.checked ? 'dark' : 'light'; save('theme', d.dataset.theme); });
     large.addEventListener('change', () => { d.dataset.largeText = String(large.checked); save('largeText', large.checked); });
     motion.addEventListener('change', () => { d.dataset.reduceMotion = String(motion.checked); save('reduceMotion', motion.checked); });
     void load;

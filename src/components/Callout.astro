@@ -1,9 +1,10 @@
 ---
 interface Props { type?: 'mistake' | 'notation' | 'idea' | 'deeper' | 'careful'; title?: string }
 const { type = 'idea', title } = Astro.props;
-const defaults = { mistake: '⚠ Common mistake', notation: '✎ Notation', idea: '◆ Key idea', deeper: '↧ Go deeper', careful: '! Careful' };
+const defaults = { mistake: 'Easy mistake to make', notation: 'Notation', idea: 'The main point', deeper: 'Extra', careful: 'Careful' };
+const label = type === 'mistake' ? (title ? `Watch out: ${title.charAt(0).toLowerCase()}${title.slice(1)}` : defaults.mistake) : (title ?? defaults[type]);
 ---
 <aside class={`callout ${type}`} role="note">
-  <div class="callout-title">{title ? `${defaults[type].split(' ')[0]} ${title}` : defaults[type]}</div>
+  <div class="callout-title">{label}</div>
   <slot />
 </aside>

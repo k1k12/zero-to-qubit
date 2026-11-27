@@ -2,7 +2,7 @@
 number: 6
 title: Multiple-qubit systems and two-qubit gates
 lecturer: Dr Ittoop Puthoor
-blurb: Gates that act on more than one qubit. CNOT, its matrix and linearity, building a Bell pair from scratch, SWAP from three CNOTs, the Toffoli gate, and applying gates to one qubit of many.
+blurb: "Gates on more than one qubit: CNOT (the important one), making a Bell pair from scratch, SWAP out of three CNOTs, the Toffoli gate, and how to apply a gate to just one qubit in a bigger system."
 minutes: 60
 prereqs: [4, 5]
 objectives:
@@ -36,7 +36,7 @@ import Steps from '../../components/Steps.astro';
 import Answer from '../../components/Answer.astro';
 import TwoQubitLab from '../../components/TwoQubitLab.astro';
 
-## Recap in one breath
+## Quick recap
 
 Single qubits: $\ket\psi = \alpha\ket0+\beta\ket1$. Two qubits: tensor product, four amplitudes in the order $\ket{00},\ket{01},\ket{10},\ket{11}$; the vector for $\ket{01}$ is $(0,1,0,0)^T$. Some states (like $\tfrac1{\sqrt2}(\ket{01}+\ket{10})$) are **entangled**. Single-qubit gates (X, H, …) are 2×2 unitaries. Now we need gates that act on **two** qubits at once; without them we could never create entanglement.
 
@@ -83,7 +83,7 @@ $$
 \mathrm{CNOT}\Big(\tfrac1{\sqrt2}(\ket{0}+\ket{1})\otimes\ket0\Big) = \tfrac1{\sqrt2}\big(\mathrm{CNOT}\ket{00} + \mathrm{CNOT}\ket{10}\big) = \tfrac1{\sqrt2}(\ket{00}+\ket{11}).
 $$
 
-A product state went in; an **entangled** state came out. That is CNOT's superpower.
+A product state went in and an **entangled** state came out. This is the whole reason CNOT matters.
 
 <Callout type="mistake" title="Which qubit is the control?">
 "CNOT" with no other information means the **first** qubit (left label) controls the **second**. If the circuit has the control on the lower wire, the action becomes $\ket{a,b}\to\ket{a\oplus b, b}$ and the matrix changes. In the lab below, compare "CNOT q0→q1" with "CNOT q1→q0" on $\ket{01}$. Qiskit adds another twist, covered in the code lab: it prints bitstrings with qubit 0 on the **right**.

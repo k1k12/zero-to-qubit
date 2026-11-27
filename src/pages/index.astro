@@ -6,98 +6,95 @@ const lectures = (await getCollection('lectures')).sort((a, b) => a.data.number 
 const lecInfo = lectures.map((l) => ({ slug: l.id, n: l.data.number, title: l.data.title }));
 ---
 <Base title="Home">
-  <section class="hero">
-    <div>
-      <div class="eyebrow">CSC3132 · Introduction to Quantum Computing</div>
-      <h1 style="font-size:2.6rem;margin:.3rem 0 .6rem">Zero to Qubit</h1>
-      <p style="font-size:1.15rem;max-width:640px" class="muted">Every lecture explained in order, with pictures you can play with, every exercise worked step by step, and practice that schedules itself. Then, when you want more, the master's and PhD-level ideas behind each one.</p>
-      <div class="btn-row" style="margin-top:1.2rem">
-        <a class="btn" id="continue" href="/lectures/01-overview">Start Lecture 1</a>
-        <a class="btn secondary" href="/flashcards" id="review-btn">Review flashcards</a>
-      </div>
-    </div>
-    <div class="card" id="module-card">
-      <div class="eyebrow">Your module</div>
-      <p style="font-size:1.5rem;margin:.3rem 0"><strong id="solid-count">0</strong> of 9 lectures solid</p>
-      <div class="dots" id="dots" aria-hidden="true"></div>
-      <p class="small muted" style="margin:.6rem 0 0">Exam: January, closed book, 60%. Problem sets: 40%.<br />Progress is saved only in this browser.</p>
-    </div>
+  <section class="intro prose">
+    <h1>Zero to Qubit</h1>
+    <p>These are my notes for <strong>CSC3132 Introduction to Quantum Computing</strong> at Newcastle. I missed a couple of lectures and got properly lost around Bell's theorem, so I went back and wrote every lecture up from the start, assuming nothing, with diagrams I could actually play with.</p>
+    <p>Every exercise from the slides is worked through, there are flashcards and practice questions, and each lecture has an "Extra" bit at the end for when you want to go past the syllabus. If you're doing the module too, I hope it helps.</p>
+    <p class="btn-row" style="margin-top:1.2rem">
+      <a class="btn" id="continue" href="/lectures/01-overview">Start with Lecture 1</a>
+      <a class="btn secondary" href="/flashcards" id="review-btn">Flashcards</a>
+    </p>
   </section>
 
-  <h2>Today's session <span class="muted small" style="font-weight:400">· about 35 minutes</span></h2>
-  <div class="grid grid-4" id="session"></div>
-  <p class="small muted">Why this order: retrieval first (it wakes up what you know and strengthens it), then one new chunk, then mixed questions (which train you to pick the right method), then a short explanation in your own words.</p>
+  <div class="home-cols">
+    <section>
+      <h2>Lectures</h2>
+      <ol class="lec-list">
+        {lecInfo.map((l) => (
+          <li data-slug={l.slug} class="lec">
+            <a href={`/lectures/${l.slug}`}><span class="num">{l.n}.</span> {l.title}</a>
+            <span class="pill mastery">not started</span>
+          </li>
+        ))}
+        <li class="muted"><span class="num">10.</span> Hardware (coming once the slides are out)</li>
+      </ol>
+      <p class="small muted">The labels are how well you've marked each one. Change them at the top of a lecture.</p>
+    </section>
 
-  <h2>Lectures</h2>
-  <div class="grid grid-3" id="lec-grid">
-    {lecInfo.map((l) => (
-      <a class="card lec" href={`/lectures/${l.slug}`} data-slug={l.slug} style="text-decoration:none;color:var(--text)">
-        <div style="display:flex;justify-content:space-between"><span class="eyebrow">Lecture {l.n}</span><span class="pill mastery">Not yet</span></div>
-        <strong>{l.title}</strong>
-      </a>
-    ))}
-  </div>
-
-  <h2>Other ways to learn</h2>
-  <div class="grid grid-4">
-    <a class="card tile" href="/visuals"><strong>Visuals</strong><span class="small muted">3D Bloch sphere, interference arrows, entanglement and Bell pictures.</span></a>
-    <a class="card tile" href="/code-lab"><strong>Code lab</strong><span class="small muted">Qiskit and OpenQASM with tests and a tutor.</span></a>
-    <a class="card tile" href="/map"><strong>Concept map</strong><span class="small muted">How every idea depends on the others.</span></a>
-    <a class="card tile" href="/notation"><strong>Notation decoder</strong><span class="small muted">Every symbol, in plain words. Press <kbd>/</kbd> anywhere.</span></a>
-    <a class="card tile" href="/ideas"><strong>Big ideas</strong><span class="small muted">The physics and maths under each lecture, with an interferometer to play with.</span></a>
-    <a class="card tile" href="/history"><strong>History</strong><span class="small muted">From Planck to the 2022 Nobel Prize.</span></a>
-    <a class="card tile" href="/library"><strong>Library</strong><span class="small muted">Papers, books, lectures and talks by level.</span></a>
-    <a class="card tile" href="/tools"><strong>Tools</strong><span class="small muted">Simulators, real hardware, maths help.</span></a>
-    <a class="card tile" href="/mock-exam"><strong>Mock exam</strong><span class="small muted">A timed paper with a mark scheme.</span></a>
-    <a class="card tile" href="/quiz"><strong>Mixed quiz</strong><span class="small muted">Exam-style questions with full working.</span></a>
-    <a class="card tile" href="/about"><strong>How this site teaches</strong><span class="small muted">The research behind the design.</span></a>
+    <aside>
+      <h2>How I revise with it</h2>
+      <ol class="routine" id="session"></ol>
+      <div class="card small" style="margin-top:1.2rem">
+        <strong>Module info</strong><br />
+        Exam in January, closed book, worth 60%. The other 40% is the ten Canvas problem sets.
+      </div>
+      <h2>Also on here</h2>
+      <ul class="also">
+        <li><a href="/visuals">Visuals</a>: a 3D Bloch sphere, interference, entanglement, BB84</li>
+        <li><a href="/mock-exam">Mock exam</a> (my draft, timed, with a mark scheme)</li>
+        <li><a href="/quiz">Quiz</a> and the <a href="/code-lab">code lab</a> (Qiskit / OpenQASM)</li>
+        <li><a href="/notation">Notation</a>, <a href="/map">concept map</a>, <a href="/ideas">big ideas</a>, <a href="/history">history</a>, <a href="/library">reading list</a></li>
+      </ul>
+    </aside>
   </div>
   <script type="application/json" id="home-data" set:html={JSON.stringify({ lectures: lecInfo, cardIds: CARDS.map((c) => c.id) })} />
 </Base>
 <style is:global>
-  .hero { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 2rem; align-items: center; padding: 1rem 0 1rem; }
-  @media (max-width: 860px) { .hero { grid-template-columns: 1fr; } }
-  .dots { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; }
-  .dots span { height: 10px; border-radius: 4px; background: var(--bg-3); }
-  .tile, .lec { text-decoration: none; color: var(--text); display: flex; flex-direction: column; gap: .35rem; }
-  .tile:hover, .lec:hover { border-color: var(--accent); }
-  .step { display: flex; flex-direction: column; gap: .4rem; text-decoration: none; color: var(--text); }
-  .step .num { width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: .9rem; }
+  .intro { padding: .4rem 0 .6rem; }
+  .intro p { font-size: 1.08rem; }
+  .home-cols { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 3rem; }
+  @media (max-width: 860px) { .home-cols { grid-template-columns: 1fr; gap: 0; } }
+  .lec-list { list-style: none; padding: 0; margin: 1rem 0; }
+  .lec-list li { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: .55rem 0; border-bottom: 1px solid var(--rule); }
+  .lec-list a { color: var(--text); text-decoration: none; font-family: var(--serif); font-size: 1.12rem; }
+  .lec-list a:hover { color: var(--accent); text-decoration: underline; }
+  .lec-list .num { color: var(--muted); display: inline-block; min-width: 1.8rem; }
+  .routine { padding-left: 1.3rem; margin: 1rem 0; }
+  .routine li { margin: .55rem 0; }
+  .also { padding-left: 1.2rem; }
+  .also li { margin: .35rem 0; }
 </style>
 <script>
   import { getMastery, load, save } from '../lib/store';
   import { dueIds } from '../lib/srs';
   const { lectures, cardIds } = JSON.parse(document.getElementById('home-data')!.textContent!) as { lectures: { slug: string; n: number; title: string }[]; cardIds: string[] };
   const m = getMastery();
-  const solid = lectures.filter((l) => m[l.slug] === 'solid').length;
-  document.getElementById('solid-count')!.textContent = String(solid);
-  document.getElementById('dots')!.innerHTML = lectures.map((l) => `<span style="background:${m[l.slug] === 'solid' ? 'var(--good)' : m[l.slug] === 'shaky' ? 'var(--shaky)' : 'var(--bg-3)'}" title="Lecture ${l.n}"></span>`).join('');
-  document.querySelectorAll<HTMLElement>('.lec').forEach((c) => {
+  document.querySelectorAll<HTMLElement>('.lec[data-slug]').forEach((c) => {
     const v = m[c.dataset.slug!] ?? 'none'; const p = c.querySelector('.mastery')!;
-    p.textContent = v === 'solid' ? 'Solid' : v === 'shaky' ? 'Shaky' : 'Not yet';
-    p.className = `pill mastery ${v === 'solid' ? 'good' : v === 'shaky' ? 'shaky' : 'bad'}`;
+    p.textContent = v === 'solid' ? 'got it' : v === 'shaky' ? 'shaky' : 'not started';
+    p.className = `pill mastery ${v === 'solid' ? 'good' : v === 'shaky' ? 'shaky' : ''}`;
   });
   // what to learn next: the last lecture you opened if it isn't solid, otherwise the first one that isn't
   const last = load<string | null>('lastLecture', null);
   const next = (last && m[last] !== 'solid' ? lectures.find((l) => l.slug === last) : null) ?? lectures.find((l) => m[l.slug] !== 'solid') ?? lectures[lectures.length - 1];
   const cont = document.getElementById('continue') as HTMLAnchorElement;
   cont.href = `/lectures/${next.slug}`;
-  cont.textContent = last ? `Continue: Lecture ${next.n}` : 'Start Lecture 1';
+  cont.textContent = last ? `Carry on: Lecture ${next.n}` : 'Start with Lecture 1';
   const { due, fresh } = dueIds(cardIds);
   const nCards = due.length + Math.min(fresh.length, 10);
-  (document.getElementById('review-btn') as HTMLAnchorElement).textContent = `Review flashcards (${due.length} due)`;
+  (document.getElementById('review-btn') as HTMLAnchorElement).textContent = due.length ? `Flashcards (${due.length} due)` : 'Flashcards';
   const steps = [
-    { t: 'Warm up', d: `${nCards} flashcards`, min: 6, href: '/flashcards', why: 'Recalling before learning makes the new material stick better.' },
-    { t: 'Learn', d: `Lecture ${next.n}: ${next.title}`, min: 15, href: `/lectures/${next.slug}`, why: 'One new chunk at a time. Answer the predict-first questions before reading on.' },
-    { t: 'Practise', d: 'Mixed quiz, 8 questions', min: 10, href: '/quiz', why: 'Mixing lectures trains you to choose the method, like the exam.' },
-    { t: 'Reflect', d: 'Explain it back', min: 4, href: '#reflect', why: 'Explaining in your own words reveals what you only thought you knew.' },
+    `<a href="/flashcards">Flashcards</a> first, about 5 minutes (${nCards} waiting). Remembering old stuff before new stuff really helps.`,
+    `One section of <a href="/lectures/${next.slug}">Lecture ${next.n}: ${next.title}</a>. Try the "guess first" questions before reading the answer.`,
+    `A <a href="/quiz">mixed quiz</a>. Mixing lectures is harder, but it's what the exam does.`,
+    `<a href="#reflect">Explain it back</a> in a few sentences, then check against the one-page summary.`,
   ];
-  document.getElementById('session')!.innerHTML = steps.map((s, i) => `<a class="card step" href="${s.href}"><span class="num">${i + 1}</span><strong>${s.t}</strong><span>${s.d}</span><span class="small muted">${s.min} min · Why: ${s.why}</span></a>`).join('');
+  document.getElementById('session')!.innerHTML = steps.map((s) => `<li>${s}</li>`).join('');
   document.querySelector('a[href="#reflect"]')!.addEventListener('click', (e) => {
     e.preventDefault();
     const box = document.getElementById('reflect-box');
     if (box) { box.remove(); return; }
-    document.getElementById('session')!.insertAdjacentHTML('afterend', `<div class="card" id="reflect-box" style="margin-top:1rem"><label><strong>In 3–5 sentences, explain today's main idea from Lecture ${next.n} as if to a friend who missed it.</strong><textarea id="reflect-text" placeholder="Start with: The big idea is…"></textarea></label><p class="small muted">Then open the lecture's one-page summary and check what you missed. Saved in this browser.</p><a class="btn small secondary" href="/summaries/${next.slug}">Compare with the summary</a></div>`);
+    document.getElementById('session')!.insertAdjacentHTML('afterend', `<div class="card" id="reflect-box" style="margin-top:1rem"><label><strong>Explain Lecture ${next.n} to a friend who missed it, in 3 to 5 sentences.</strong><textarea id="reflect-text" placeholder="The main idea is..."></textarea></label><p class="small muted">Then open the one-page summary and see what you left out. This is saved in your browser.</p><a class="btn small secondary" href="/summaries/${next.slug}">Compare with the summary</a></div>`);
     const ta = document.getElementById('reflect-text') as HTMLTextAreaElement;
     ta.value = load(`reflect:${next.slug}`, '');
     ta.addEventListener('input', () => save(`reflect:${next.slug}`, ta.value));
